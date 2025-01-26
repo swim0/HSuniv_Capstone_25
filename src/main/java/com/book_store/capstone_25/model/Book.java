@@ -22,6 +22,23 @@ public class Book {
     @Column(nullable = false)
     private String publisher;
 
+    public String setTitle(String title){
+       return this.title = title;
+    };
+
+    public String setAuthor(String author){
+        return this.author = author;
+    };
+
+    public String setGenre(String genre){
+        return this.genre = genre;
+    };
+
+    public String setPublisher(String publisher){
+        return this.publisher = publisher;
+    };
+
+
 
 
 

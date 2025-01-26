@@ -6,12 +6,14 @@ import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.User_order;
 import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.model.UserInterest;
+import jdk.jfr.Category;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.naming.Name;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,22 +33,21 @@ public class MyPageController {
     }
 
     @PutMapping("MyPage/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable("userId") String userId,
+    public ResponseEntity<User> MyPage_vaild(@PathVariable("userId") String userId,
                                            @RequestParam("password") String password,
                                            @RequestBody User updatedUser) {
         User user = userRepository.findUserByUserIdAndPassword(userId, password)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
-        if (!user.getPassword().equals(password)) {
+        if (!user.toString().equals(password)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 틀렸습니다.");
         }
 
-        if (updatedUser.getPhoneNumber() != null) user.setPhoneNumber(updatedUser.getPhoneNumber());
-        if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
-        if (updatedUser.getAddress() != null) user.setAddress(updatedUser.getAddress());
-        if (updatedUser.getName() != null) user.setName(updatedUser.getName());
-        if (updatedUser.getBirthDate() != null) user.setBirthDate(updatedUser.getBirthDate());
-
+        if (updatedUser.phoneNumber != null) updatedUser.phoneNumber = updatedUser.phoneNumber;
+        if (updatedUser.email != null) updatedUser.email = updatedUser.email;
+        if (updatedUser.address != null) updatedUser.address = updatedUser.address;
+        if (updatedUser.name != null) updatedUser.name = updatedUser.name;
+        if (updatedUser.birthDate != null) updatedUser.birthDate = updatedUser.birthDate;
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
@@ -59,7 +60,7 @@ public class MyPageController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("아이디나 비밀번호가 잘못되었습니다.");
         }
         // 사용자를 제거합니다.
-        userRepository.deleteByUserId(user.get().getUserId());
+        userRepository.deleteByUserId(String.valueOf(user));
         // 회원 탈퇴 성공 메시지와 함께 HTTP 200 상태 코드를 반환합니다.
         return ResponseEntity.ok("회원 탈퇴가 성공적으로 완료되었습니다.");
     }
@@ -78,15 +79,14 @@ public class MyPageController {
     }
 
     @PostMapping("/{userId}/interests")
-    public ResponseEntity<UserInterest> createUserInterest(@PathVariable("userId") String userId, @RequestBody UserInterest userInterest) {
-        userInterest.setUserId(userId);
+    public ResponseEntity<UserInterest> createUserInterest(@PathVariable("userId")@RequestBody UserInterest userInterest) {
         UserInterest newUserInterest = interestRepository.save(userInterest);
         return ResponseEntity.status(HttpStatus.CREATED).body(newUserInterest);
     }
 
-    @DeleteMapping("/{userId}/interests/{interestId}")
-    public ResponseEntity<Void> deleteUserInterest(@PathVariable("userId") String userId, @PathVariable("interestId") Long interestId) {
-        interestRepository.deleteByUserIdAndInterestId(userId, interestId);
+    @DeleteMapping("/{userId}/interests")
+    public ResponseEntity<Void> deleteUserInterest(@PathVariable("userId/interests")@RequestBody String userId,@RequestBody Long interestId) {
+        interestRepository.deleteByUserIdAndInterestId(userId,interestId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
