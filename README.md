@@ -5,3 +5,5 @@
 UserController API 명세서 
 api/register(회원가입),api/login(로그인),api/logout(로그아웃)
 api/Id_such(아이디 찾기, 가입시 등록한 이메일로 찾음),api/password_such(비밀번호 찾기,마찬가지로 이메일 )
+
+mysql 파일은 그대로 코드 실행해서 빈 테이블 만들어서 회원가입부터 테스트 해보시면 됩니다 테이블 하나 더 만들어서 체크해봤으니 문제 없을 겁니다.
