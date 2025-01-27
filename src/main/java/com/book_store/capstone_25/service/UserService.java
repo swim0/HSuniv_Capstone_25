@@ -48,5 +48,6 @@ public class UserService {
     public void deleteInterest(Long interestId) {
         interestRepository.deleteById(interestId);
     }
+
 }
 

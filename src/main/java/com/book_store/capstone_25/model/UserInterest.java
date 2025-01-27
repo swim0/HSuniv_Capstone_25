@@ -1,36 +1,30 @@
 package com.book_store.capstone_25.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jdk.jfr.Category;
+import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.Setter;
 
+@Table (name = "interests")
 @Entity
+@Getter
+@Setter
 public class UserInterest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "interest_no", nullable = false)  // 외래 키 컬럼명을 user_id로 변경
+    private User user;  //
+
     private String userId;
 
-    @Setter
     @Enumerated(EnumType.STRING)
-    private String Genre;
-
-    public void setUserId(String userId) {
-
-    }
-
-    public void setGenre(UserInterest.Genre genre) {
-    }
+    private Genre genre;  // String이 아닌 Genre enum 타입으로 변경
 
     public enum Genre {
-        코미디,
-        로맨스,
-        스릴러
+        ROMANCE,
+        COMEDY,
+        THRILLER
     }
-
 }

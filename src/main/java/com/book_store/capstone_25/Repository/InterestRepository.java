@@ -1,19 +1,14 @@
 package com.book_store.capstone_25.Repository;
 
+import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.model.UserInterest;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-public interface InterestRepository extends JpaRepository<UserInterest, Long>{
-    @Query("SELECT u from UserInterest u WHERE u.userId = :userId")
-    List<UserInterest> findByUserId(@Param("userId") String userId);
+public interface InterestRepository extends JpaRepository<UserInterest, Long> {
 
-    @Transactional
-    @Modifying
-    @Query("delete from UserInterest ui where ui.userId = :userId and ui.id = :interestId")
-    void deleteByUserIdAndInterestId(@Param("userId") String userId, @Param("interestId") Long interestId);
+    // 특정 사용자의 특정 관심사를 삭제
+    void deleteUserInterestByUserAndId(User user, Long id);
+
+    // 특정 사용자에 대한 관심사를 찾기
+    UserInterest findUserInterestByUser(User user);
 }

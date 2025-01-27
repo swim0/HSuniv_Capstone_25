@@ -5,8 +5,6 @@ import com.book_store.capstone_25.model.User;
 
 import com.book_store.capstone_25.service.UserService;
 import com.book_store.capstone_25.Repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -16,9 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.UUID;
 
 
 @RestController
@@ -28,48 +24,33 @@ public class UserController {
     @Getter
     private final UserService userService;
     private final UserRepository userRepository;
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     public UserController(UserRepository userRepository, UserService userService) { // 생성자 주입
         this.userService = userService;
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/add_form")
-    public ResponseEntity<?> saveUserToDatabase(@RequestBody User user) {
-        try {
-            User savedUser = userService.saveUser(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
-    @PostMapping("add_form/register")
+    // 회원가입 검증 코드
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (userRepository.findUserByUserId(user.toString()).isEmpty() || userRepository.findUserByUserId(user.toString()).isEmpty() || userRepository.findUserByPassword(user.toString()).isEmpty() || userRepository.findUserByPassword(user.toString()).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사용자 ID와 비밀번호는 필수입니다.");
+        // Check if userId or password is empty/null
+        if (user.getUserId() == null || user.getUserId().trim().isEmpty() ||
+                user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("사용자 ID와 비밀번호는 필수입니다.");
         }
-        if (userRepository.findUserByUserId(user.toString()).isPresent())
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 존재하는 사용자 ID입니다.");
+        if (userRepository.findUserByUserId(user.getUserId()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("이미 존재하는 사용자 ID입니다.");
+        }
         try {
             User savedUser = userService.saveUser(user);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("사용자 등록 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
-
-    @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers() {
-        try {
-            Iterable<User> users = userService.getAllUsers();
-            return ResponseEntity.ok(users);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch users");
-        }
-    }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
 
@@ -103,29 +84,24 @@ public class UserController {
     }
 
     @PostMapping("/Id_such")
-    public ResponseEntity<String> suchid(LoginRequest email) {
-        Optional<User> userEmail = userRepository.findUserByUserInfo(email.toString());
+    public ResponseEntity<String> suchid(String email) {
+        Optional<User> userEmail = userRepository.findUserByEmail(email);
         if (userEmail.isEmpty()) {
             // 해당 이메일을 가진 사용자가 없는 경우
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 이메일로 등록된 계정이 없습니다.");
         }
-        // 사용자 아이디를 반환합니다.
-        return ResponseEntity.ok(email.userId);
+        // 사용자 아이디를 반환합니다
+        return ResponseEntity.ok(userEmail.get().getUserId());
     }
 
     @PostMapping("/password_such")
-    public void resetPassword(LoginRequest email) {
+    public ResponseEntity<String> Password_such(String email) {
         // findByEmail은 Optional<User>를 반환하기 때문에, null 검사 대신 "isPresent", "orElseThrow" 등의 메소드를 사용합니다.
-        User user = userRepository.findUserByUserInfo(email.toString())
-                .orElseThrow(() -> new NoSuchElementException("해당 이메일로 등록된 계정이 없습니다."));
-
-        // 임시 비밀번호를 생성합니다. (예: UUID를 이용)
-        String tempPassword = UUID.randomUUID().toString();
-        // 임시 비밀번호를 설정합니다.
-        user.updatePassword(tempPassword);
-
-        // 사용자 정보를 업데이트합니다.
-        userRepository.save(user);
+        Optional<User> userEmail = userRepository.findUserByEmail(email);
+        if(userEmail.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 이메일로 등록된 계정이 없습니다.");
+        }
+        return ResponseEntity.ok(userEmail.get().getPassword());
     }
 
 }

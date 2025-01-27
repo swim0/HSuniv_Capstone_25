@@ -17,7 +17,5 @@ public class UserOrderService {
         this.userOrderRepository = userOrderRepository;
     }
 
-    public List<User_order> getOrdersByUserId(String userId) {
-        return userOrderRepository.findByUserId(userId);
-    }
+
 }

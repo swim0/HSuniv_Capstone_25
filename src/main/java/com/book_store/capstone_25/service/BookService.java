@@ -1,45 +1,46 @@
-
 package com.book_store.capstone_25.service;
+
 import com.book_store.capstone_25.Repository.BookRepository;
 import com.book_store.capstone_25.model.Book;
+import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+@Service
 public class BookService {
 
-    private List<String> books = new ArrayList<>();
+    private final BookRepository bookRepository;
 
-    private BookRepository bookRepository;
-    private Book book;
-    public BookService(BookRepository bookRepository, Book book) {
-       this.bookRepository = bookRepository;
-       this.book = book;
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
     }
 
-    public Book registerBook(String bookName) {
-        if (!books.contains(bookName)) {
-            books.add(bookName);
-        }
-        return null;
-    }
-
-    public boolean removeBook(Long id) {
-        return books.remove(id);
-    }
-
-    public Optional<String> findBook(String bookName) {
-        return books.stream().filter(book -> book.equalsIgnoreCase(bookName)).findFirst();
-    }
-
-    public boolean deleteBook(String bookName) {
-        return books.removeIf(book -> book.equalsIgnoreCase(bookName));
-    }
-
-    public Book saveBook(Book book) {
+    public Book registerBook(Book book) {
         return bookRepository.save(book);
     }
 
+    public boolean removeBook(Long id) {
+        if (bookRepository.existsById(id)) {
+            bookRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 
+    public Optional<Book> findBook(Long id) {
+        return bookRepository.findById(id);
+    }
 
+    public boolean deleteBook(Long id) {
+        if (bookRepository.existsById(id)) {
+            bookRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    public List<Book> getAllBooks() {
+        return bookRepository.findAll();
+    }
 }

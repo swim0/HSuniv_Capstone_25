@@ -3,17 +3,15 @@ package com.book_store.capstone_25.controller;
 import com.book_store.capstone_25.Repository.InterestRepository;
 import com.book_store.capstone_25.Repository.UserOrderRepository;
 import com.book_store.capstone_25.Repository.UserRepository;
-import com.book_store.capstone_25.model.User_order;
 import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.model.UserInterest;
-import jdk.jfr.Category;
+import com.book_store.capstone_25.service.UserService;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.naming.Name;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,11 +23,12 @@ public class MyPageController {
     private final UserOrderRepository userOrderRepository;
     private final UserRepository userRepository;
     private final InterestRepository interestRepository;
-
-    public MyPageController(UserOrderRepository userOrderRepository, UserRepository userRepository, InterestRepository interestRepository){
+    private final UserService userService;
+    public MyPageController(UserOrderRepository userOrderRepository, UserRepository userRepository, InterestRepository interestRepository, UserService userService){
         this.userOrderRepository = userOrderRepository;
         this.userRepository = userRepository;
         this.interestRepository = interestRepository;
+        this.userService = userService;
     }
 
     @PutMapping("MyPage/{userId}")
@@ -43,11 +42,11 @@ public class MyPageController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 틀렸습니다.");
         }
 
-        if (updatedUser.phoneNumber != null) updatedUser.phoneNumber = updatedUser.phoneNumber;
-        if (updatedUser.email != null) updatedUser.email = updatedUser.email;
-        if (updatedUser.address != null) updatedUser.address = updatedUser.address;
-        if (updatedUser.name != null) updatedUser.name = updatedUser.name;
-        if (updatedUser.birthDate != null) updatedUser.birthDate = updatedUser.birthDate;
+        if (updatedUser.getPhoneNumber() != null) updatedUser.setPhoneNumber(updatedUser.getPhoneNumber());
+        if (updatedUser.getEmail() != null) updatedUser.setEmail(updatedUser.getEmail());
+        if (updatedUser.getAddress() != null) updatedUser.setAddress(updatedUser.getAddress());
+        if (updatedUser.getName() != null) updatedUser.setName(updatedUser.getName());
+        if (updatedUser.getBirthDate() != null) updatedUser.setBirthDate(updatedUser.getBirthDate());
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
@@ -66,16 +65,24 @@ public class MyPageController {
     }
 
     @GetMapping("/MyPage/{userId}/orders")
-    public ResponseEntity<List<User_order>> getOrders(@PathVariable("userId") String userId) {
-        List<User_order> userorders = userOrderRepository.findByUserId(userId);
+    public ResponseEntity<Optional<User>> getOrders(@PathVariable("userId") String userId) {
+        Optional<User> userorders = userRepository.findUserByUserId(userId);
         return ResponseEntity.ok(userorders);
     }
 
 
     @GetMapping("/{userId}/interests")
     public ResponseEntity<List<UserInterest>> getUserInterests(@PathVariable("userId") String userId) {
-        List<UserInterest> userInterests = interestRepository.findByUserId(userId);
-        return ResponseEntity.ok(userInterests);
+        Optional<User> user = userRepository.findUserByUserId(userId);
+        // 2. 사용자가 존재하지 않으면 404 Not Found 응답 반환
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        // 3. 사용자의 관심사 목록 조회
+        ResponseEntity<List<UserInterest>> userInterests = getUserInterests(userId);
+
+        // 4. 관심사 목록 반환
+        return ResponseEntity.ok(userInterests.getBody());
     }
 
     @PostMapping("/{userId}/interests")
@@ -84,11 +91,13 @@ public class MyPageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newUserInterest);
     }
 
-    @DeleteMapping("/{userId}/interests")
+
+
+    /*@DeleteMapping("/{userId}/interests")
     public ResponseEntity<Void> deleteUserInterest(@PathVariable("userId/interests")@RequestBody String userId,@RequestBody Long interestId) {
         interestRepository.deleteByUserIdAndInterestId(userId,interestId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+    }*/
 }
 
 

@@ -20,8 +20,6 @@ public class User_order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
 
     @Column(name = "book_name", nullable = false)
     private String bookName;

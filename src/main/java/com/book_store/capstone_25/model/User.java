@@ -1,5 +1,6 @@
 package com.book_store.capstone_25.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,36 +10,41 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Data
 @Entity
 @Table(name = "users")
 public class User {
-    // OneToMany relationship with Order
+
     @Id
     @Column(name = "user_id")
-    public String userId;
+    private String userId;
     @Column(name = "password")
-    public String password;
+    private String password;
 
-    public String name;
+    private String name;
 
     @Column(name = "email")
-    public String email;
+    private String email;
 
     @Column(name = "phone")
-    public String phoneNumber;
+    private String phoneNumber;
 
-    public String address;
+    private String address;
+
     @Column(name = "birthdate")
-    public String birthDate;
-
-    public enum Gender {
-        Male, Fmale
-    }
+    private String birthDate;
 
     @Enumerated(EnumType.STRING)
+    private Gender gender;
+    public enum Gender {
+        M, F
+    }
+
     public void updateUser(User updatedUser) {
         this.name = updatedUser.name;
         this.email = updatedUser.email;
@@ -47,14 +53,18 @@ public class User {
         this.birthDate = updatedUser.birthDate;
         // 추가로 업데이트해야 할 필드가 있다면 여기에 추가하세요
     }
-    public void updatePassword(String updatePassword){
-        this.password = updatePassword;
-    }
 
 
-
-
-
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<User_order> userorders;
+     List<User_order> user_order;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+     List<Book> Book;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+     List<UserInterest> Userinterest;
+
 }
