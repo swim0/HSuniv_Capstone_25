@@ -3,7 +3,9 @@
 명세서와 이름이 다른 API들이 조금 있으며 회원가입 및 로그인 유저 관련 컨트롤러인 UserController 는 크게 차이 안납니다. UserController에 있는 API들만 통신해보시면 좋을 것 같습니다. 
 
 UserController API 명세서 
+
 api/register(회원가입),api/login(로그인),api/logout(로그아웃)
+
 api/Id_such(아이디 찾기, 가입시 등록한 이메일로 찾음),api/password_such(비밀번호 찾기,마찬가지로 이메일 )
 
 mysql 파일은 그대로 코드 실행해서 빈 테이블 만들어서 회원가입부터 테스트 해보시면 됩니다 테이블 하나 더 만들어서 체크해봤으니 문제 없을 겁니다.
