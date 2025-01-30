@@ -14,8 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.Map;
 import java.util.Optional;
-
 
 @RestController
 @RequestMapping({"/api"}) // 클래스 전체에 적용된 루트 경로 정의
@@ -53,21 +53,27 @@ public class UserController {
     }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
-
         Optional<User> userOpt = userRepository.findUserByUserIdAndPassword(loginRequest.userId, loginRequest.password);
-        if (userOpt.isEmpty()) {
-            // 해당 아이디와 비밀번호를 가진 사용자가 없는 경우 에러 메시지와 함께 HTTP 400 상태 코드를 반환합니다.
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("아이디나 비밀번호가 잘못되었습니다.");
+        if (userOpt.isEmpty() || userOpt.get() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "아이디나 비밀번호가 잘못되었습니다."
+                    ));
         }
 
         User user = userOpt.get();
 
         // 세션을 생성합니다.
         HttpSession session = request.getSession();
-        session.setAttribute("userId", user.toString());
+        session.setAttribute("userId", user.getUserId());
 
-        // 로그인 성공 메시지와 함께 HTTP 200 상태 코드를 반환합니다.
-        return ResponseEntity.ok("로그인이 성공적으로 이루어졌습니다.");
+        // JSON 응답 반환
+        return ResponseEntity.ok(Map.of(
+                "message", "로그인이 성공적으로 이루어졌습니다.",
+                "userId", user.getUserId(),
+                "success", true
+        ));
     }
 
     @PostMapping("/logout")
@@ -84,24 +90,27 @@ public class UserController {
     }
 
     @PostMapping("/Id_such")
-    public ResponseEntity<String> suchid(String email) {
+    public ResponseEntity<?> suchid(@RequestBody String email) {
         Optional<User> userEmail = userRepository.findUserByEmail(email);
         if (userEmail.isEmpty()) {
-            // 해당 이메일을 가진 사용자가 없는 경우
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 이메일로 등록된 계정이 없습니다.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "해당 이메일로 등록된 계정이 없습니다."));
         }
-        // 사용자 아이디를 반환합니다
-        return ResponseEntity.ok(userEmail.get().getUserId());
+        // JSON 형태로 응답
+        return ResponseEntity.ok(Map.of("userId", userEmail.get().getUserId()));
     }
 
     @PostMapping("/password_such")
-    public ResponseEntity<String> Password_such(String email) {
-        // findByEmail은 Optional<User>를 반환하기 때문에, null 검사 대신 "isPresent", "orElseThrow" 등의 메소드를 사용합니다.
+    public ResponseEntity<?> passwordSuch(@RequestBody String email) {
         Optional<User> userEmail = userRepository.findUserByEmail(email);
-        if(userEmail.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 이메일로 등록된 계정이 없습니다.");
+        if (userEmail.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "해당 이메일로 등록된 계정이 없습니다!"));
         }
-        return ResponseEntity.ok(userEmail.get().getPassword());
+        // 비밀번호 직접 반환 X, 대신 보안 메시지 반환
+        return ResponseEntity.ok(Map.of(
+                "Id",userEmail.get().getPassword()
+        ));
     }
 
 }

@@ -44,6 +44,13 @@ public class User {
     public enum Gender {
         M, F
     }
+    @Column(name = "age")
+    private String age;
+    @Column(name = "cardnumber")// 문자열로 나이 저장
+    private String cardNumber;
+    @Column(name = "cardtype")// 카드 번호
+    private String cardType;   // 카드 종류
+
 
     public void updateUser(User updatedUser) {
         this.name = updatedUser.name;
