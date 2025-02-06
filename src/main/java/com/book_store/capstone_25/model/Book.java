@@ -7,11 +7,12 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+
 @Table(name = "books")
 public class Book {
 
     @ManyToOne
-    @JoinColumn(name = "book_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
 
