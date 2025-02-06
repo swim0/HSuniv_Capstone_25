@@ -56,10 +56,7 @@ public class UserController {
         Optional<User> userOpt = userRepository.findUserByUserIdAndPassword(loginRequest.userId, loginRequest.password);
         if (userOpt.isEmpty() || userOpt.get() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(
-                            "success", false,
-                            "message", "아이디나 비밀번호가 잘못되었습니다."
-                    ));
+                    .body("아이디나 비밀번호가 잘못되었습니다.");
         }
 
         User user = userOpt.get();
@@ -90,7 +87,7 @@ public class UserController {
     }
 
     @PostMapping("/Id_such")
-    public ResponseEntity<?> suchid(@RequestBody String email) {
+    public ResponseEntity<?> suchid(@RequestParam String email) {
         Optional<User> userEmail = userRepository.findUserByEmail(email);
         if (userEmail.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -101,7 +98,7 @@ public class UserController {
     }
 
     @PostMapping("/password_such")
-    public ResponseEntity<?> passwordSuch(@RequestBody String email) {
+    public ResponseEntity<?> passwordSuch(@RequestParam String email) {
         Optional<User> userEmail = userRepository.findUserByEmail(email);
         if (userEmail.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -109,7 +106,7 @@ public class UserController {
         }
         // 비밀번호 직접 반환 X, 대신 보안 메시지 반환
         return ResponseEntity.ok(Map.of(
-                "Id",userEmail.get().getPassword()
+                "password",userEmail.get().getPassword()
         ));
     }
 

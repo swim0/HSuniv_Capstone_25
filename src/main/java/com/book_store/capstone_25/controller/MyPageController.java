@@ -31,7 +31,7 @@ public class MyPageController {
         this.userService = userService;
     }
 
-    @PutMapping("MyPage/{userId}")
+    @PutMapping("/MyPage/{userId}")
     public ResponseEntity<User> MyPage_vaild(@PathVariable("userId") String userId,
                                            @RequestParam("password") String password,
                                            @RequestBody User updatedUser) {
