@@ -4,7 +4,7 @@ import com.book_store.capstone_25.Repository.InterestRepository;
 import com.book_store.capstone_25.Repository.UserOrderRepository;
 import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.User;
-import com.book_store.capstone_25.model.UserInterest;
+import com.book_store.capstone_25.model.User_Interest;
 import com.book_store.capstone_25.service.UserService;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
@@ -31,35 +31,37 @@ public class MyPageController {
         this.userService = userService;
     }
 
-    @PutMapping("/MyPage/{userId}")
+    @PutMapping("MyPage/{userId}")
     public ResponseEntity<User> MyPage_vaild(@PathVariable("userId") String userId,
-                                           @RequestParam("password") String password,
-                                           @RequestBody User updatedUser) {
+                                             @RequestParam("password") String password,
+                                             @RequestBody User updatedUser) {
         User user = userRepository.findUserByUserIdAndPassword(userId, password)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
-        if (!user.toString().equals(password)) {
+        if (!user.getPassword().equals(password)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 틀렸습니다.");
         }
 
-        if (updatedUser.getPhoneNumber() != null) updatedUser.setPhoneNumber(updatedUser.getPhoneNumber());
-        if (updatedUser.getEmail() != null) updatedUser.setEmail(updatedUser.getEmail());
-        if (updatedUser.getAddress() != null) updatedUser.setAddress(updatedUser.getAddress());
-        if (updatedUser.getName() != null) updatedUser.setName(updatedUser.getName());
-        if (updatedUser.getBirthDate() != null) updatedUser.setBirthDate(updatedUser.getBirthDate());
+        if (updatedUser.getPhoneNumber() != null) user.setPhoneNumber(updatedUser.getPhoneNumber());
+        if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
+        if (updatedUser.getAddress() != null) user.setAddress(updatedUser.getAddress());
+        if (updatedUser.getName() != null) user.setName(updatedUser.getName());
+        if (updatedUser.getBirthDate() != null) user.setBirthDate(updatedUser.getBirthDate());
+        if (updatedUser.getAge() != null) user.setAge(updatedUser.getAge());
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
-    @PostMapping("/MyPage/delete")
-    public ResponseEntity<String> deleteUser(@RequestParam String password) {
+
+    @DeleteMapping("/MyPage/{userId}/delete")
+    public ResponseEntity<String> deleteUser(@PathVariable("userId") String userId,@RequestParam String password) {
         // 비밀번호로 사용자를 검증.
-        Optional<User> user = userRepository.findUserByPassword(password);
+        Optional<User> user = userRepository.findUserByUserIdAndPassword(userId, password);
         if (user.isEmpty()) {
             // 해당 아이디와 비밀번호를 가진 사용자가 없는 경우 에러 메시지와 함께 HTTP 400 상태 코드를 반환합니다.
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("아이디나 비밀번호가 잘못되었습니다.");
         }
         // 사용자를 제거합니다.
-        userRepository.deleteByUserId(String.valueOf(user));
+        userRepository.deleteByUserId(userId);
         // 회원 탈퇴 성공 메시지와 함께 HTTP 200 상태 코드를 반환합니다.
         return ResponseEntity.ok("회원 탈퇴가 성공적으로 완료되었습니다.");
     }
@@ -71,33 +73,39 @@ public class MyPageController {
     }
 
 
-    @GetMapping("/{userId}/interests")
-    public ResponseEntity<List<UserInterest>> getUserInterests(@PathVariable("userId") String userId) {
-        Optional<User> user = userRepository.findUserByUserId(userId);
+    @GetMapping("/MyPage/{userId}/interests")
+    public ResponseEntity<List<User_Interest>> getUserInterests(@PathVariable("userId") User userId) {
+        Optional<User> user = userRepository.findUserByUserId(userId.getUserId());
         // 2. 사용자가 존재하지 않으면 404 Not Found 응답 반환
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
         // 3. 사용자의 관심사 목록 조회
-        ResponseEntity<List<UserInterest>> userInterests = getUserInterests(userId);
+        ResponseEntity<List<User_Interest>> userInterests = getUserInterests(userId);
 
         // 4. 관심사 목록 반환
         return ResponseEntity.ok(userInterests.getBody());
     }
+    @PostMapping("/MyPage/{userId}/add_interests")
+    public ResponseEntity<User_Interest> createUserInterest(@PathVariable("userId") String userId, @RequestParam User_Interest.Genre genre) {
+            User user = userRepository.findUserByUserId(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + userId));
 
-    @PostMapping("/{userId}/interests")
-    public ResponseEntity<UserInterest> createUserInterest(@PathVariable("userId")@RequestBody UserInterest userInterest) {
-        UserInterest newUserInterest = interestRepository.save(userInterest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUserInterest);
-    }
+            User_Interest userInterest = new User_Interest();
+            userInterest.setUser(user); // User 객체 설정
+            userInterest.setGenre(genre);
+
+            interestRepository.save(userInterest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(userInterest);
+        }
 
 
 
-    /*@DeleteMapping("/{userId}/interests")
-    public ResponseEntity<Void> deleteUserInterest(@PathVariable("userId/interests")@RequestBody String userId,@RequestBody Long interestId) {
-        interestRepository.deleteByUserIdAndInterestId(userId,interestId);
+    @DeleteMapping("/MyPage/{userId}/delete_interests")
+    public ResponseEntity<Void> deleteUserInterest(@PathVariable("userId")@RequestBody User userId, @RequestBody User_Interest.Genre genre) {
+        interestRepository.deleteUser_InterestByUserAndGenre(userId, genre);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }*/
+    }
 }
 
 

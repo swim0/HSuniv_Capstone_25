@@ -4,31 +4,34 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+// Book.java
 @Entity
-@Getter
-@Setter
-
 @Table(name = "books")
+@Getter @Setter
 public class Book {
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long bookId;
 
     private String title;
     private String author;
     private String publisher;
+    private String genre;
+    private BigDecimal price;
 
-    @Enumerated(EnumType.STRING)
-    private Genre genre;
+    @Lob
+    private byte[] bookImage;
+    private String imageType;
 
-    public enum Genre {
-        COMEDY,
-        ROMANCE,
-        THRILLER
-    }
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
+
+
+
+

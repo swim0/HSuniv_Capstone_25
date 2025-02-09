@@ -5,7 +5,7 @@ import com.book_store.capstone_25.model.User;
 import java.util.Optional;
 import com.book_store.capstone_25.Repository.UserRepository;
 
-import com.book_store.capstone_25.model.UserInterest;
+import com.book_store.capstone_25.model.User_Interest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,15 +38,18 @@ public class UserService {
         return optionalUser.get();
     }
 
-    public UserInterest addInterest(String userId, UserInterest.Genre genre) {
-        UserInterest userInterest = new UserInterest();
-        userInterest.setUserId(userId);
+    public void addInterest(String userId, User_Interest.Genre genre) {
+        User_Interest userInterest = new User_Interest();
+        userInterest.getUser().setUserId(userId);
         userInterest.setGenre(genre);
-        return interestRepository.save(userInterest);
+        interestRepository.save(userInterest);
     }
 
-    public void deleteInterest(Long interestId) {
-        interestRepository.deleteById(interestId);
+    public User_Interest removeInterest(User user_id, User_Interest.Genre genre) {
+        User_Interest userInterest = new User_Interest();
+        userInterest.getUser().setUserId(user_id.getUserId());
+        userInterest.setGenre(genre);
+        return interestRepository.save(userInterest);
     }
 
 }

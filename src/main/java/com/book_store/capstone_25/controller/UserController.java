@@ -51,10 +51,11 @@ public class UserController {
                     .body("사용자 등록 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         Optional<User> userOpt = userRepository.findUserByUserIdAndPassword(loginRequest.userId, loginRequest.password);
-        if (userOpt.isEmpty() || userOpt.get() == null) {
+        if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("아이디나 비밀번호가 잘못되었습니다.");
         }
@@ -104,11 +105,22 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "해당 이메일로 등록된 계정이 없습니다!"));
         }
-        // 비밀번호 직접 반환 X, 대신 보안 메시지 반환
         return ResponseEntity.ok(Map.of(
-                "password",userEmail.get().getPassword()
+                "password", userEmail.get().getPassword()
         ));
     }
+
+    @PostMapping("/infofind")
+    public ResponseEntity<?> userInfo(@RequestParam String userId) {
+        Optional<User> userinfo = userRepository.findUserByUserId(userId);
+        if (userinfo.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "해당 아이디로 등록된 계정이 없습니다!"));
+        }
+        // User 객체 자체를 반환
+        return ResponseEntity.ok(userinfo.get());
+    }
+
 
 }
 
