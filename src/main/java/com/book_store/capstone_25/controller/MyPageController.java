@@ -6,6 +6,7 @@ import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.model.User_Interest;
 import com.book_store.capstone_25.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -52,18 +54,15 @@ public class MyPageController {
         return ResponseEntity.ok(savedUser);
     }
 
-    @DeleteMapping("/MyPage/{userId}/delete")
-    public ResponseEntity<String> deleteUser(@PathVariable("userId") String userId,@RequestParam String password) {
-        // 비밀번호로 사용자를 검증.
+    @PostMapping("/MyPage/delete")
+    public ResponseEntity<?> deleteUser(@RequestParam String userId, @RequestParam String password) {
         Optional<User> user = userRepository.findUserByUserIdAndPassword(userId, password);
         if (user.isEmpty()) {
-            // 해당 아이디와 비밀번호를 가진 사용자가 없는 경우 에러 메시지와 함께 HTTP 400 상태 코드를 반환합니다.
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("아이디나 비밀번호가 잘못되었습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "아이디나 비밀번호가 잘못되었습니다."));
         }
-        // 사용자를 제거합니다.
         userRepository.deleteByUserId(userId);
-        // 회원 탈퇴 성공 메시지와 함께 HTTP 200 상태 코드를 반환합니다.
-        return ResponseEntity.ok("회원 탈퇴가 성공적으로 완료되었습니다.");
+        return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
     }
 
     @GetMapping("/MyPage/{userId}/orders")
