@@ -53,18 +53,18 @@ public class MyPageController {
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
-
+    @Transactional
     @DeleteMapping("/MyPage/{userId}")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId,@RequestBody String password) {
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId,@RequestParam String password) {
         Optional<User> user = userRepository.findUserByUserIdAndPassword(userId,password);
 
         if (user.isEmpty()) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "아이디나 비밀번호가 잘못되었습니다."));
+                    .body(Map.of("message", "아이디나 비밀번호가 잘못되었습니다"));
         }
 
-        userRepository.deleteByUserId(userId);
+        userRepository.deleteUserByUserId(userId);
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
     }
 
