@@ -59,6 +59,11 @@ public class User {
         // 추가로 업데이트해야 할 필드가 있다면 여기에 추가하세요
     }
 
+    public void updatePayment(User updatedUser) {
+        this.cardNumber = updatedUser.cardNumber;
+        this.cardType = updatedUser.cardType;
+    }
+
 
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

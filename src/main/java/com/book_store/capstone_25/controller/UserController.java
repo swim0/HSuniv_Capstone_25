@@ -1,8 +1,11 @@
 package com.book_store.capstone_25.controller;
 
 import com.book_store.capstone_25.DTO.LoginRequest;
+import com.book_store.capstone_25.Repository.UserSuchRepository;
 import com.book_store.capstone_25.model.User;
 
+import com.book_store.capstone_25.model.User_Such;
+import com.book_store.capstone_25.service.EmailService;
 import com.book_store.capstone_25.service.UserService;
 import com.book_store.capstone_25.Repository.UserRepository;
 
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping({"/api"}) // 클래스 전체에 적용된 루트 경로 정의
@@ -23,11 +27,17 @@ import java.util.Optional;
 public class UserController {
     @Getter
     private final UserService userService;
-    private final UserRepository userRepository;
+    private final EmailService emailServcie;
+    private final UserRepository userRepository;;
+    private final UserSuchRepository UserSuchRepository;
+    private final UserSuchRepository userSuchRepository;
 
-    public UserController(UserRepository userRepository, UserService userService) { // 생성자 주입
+    public UserController(UserRepository userRepository, UserService userService, EmailService emailServcie,com.book_store.capstone_25.Repository.UserSuchRepository userSuchRepository) { // 생성자 주입
         this.userService = userService;
         this.userRepository = userRepository;
+        this.emailServcie = emailServcie;
+        UserSuchRepository = userSuchRepository;
+        this.userSuchRepository = userSuchRepository;
     }
 
     // 회원가입 검증 코드
@@ -88,8 +98,8 @@ public class UserController {
     }
 
     @PostMapping("/Id_such")
-    public ResponseEntity<?> suchid(@RequestParam String email) {
-        Optional<User> userEmail = userRepository.findUserByEmail(email);
+    public ResponseEntity<?> such_id(@RequestParam String email) {
+        Optional<User> userEmail = userRepository.findUsersByEmail(email);
         if (userEmail.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "해당 이메일로 등록된 계정이 없습니다."));
@@ -99,15 +109,49 @@ public class UserController {
     }
 
     @PostMapping("/password_such")
-    public ResponseEntity<?> passwordSuch(@RequestParam String email) {
-        Optional<User> userEmail = userRepository.findUserByEmail(email);
-        if (userEmail.isEmpty()) {
+    public ResponseEntity<?> password_such(@RequestParam String email) {
+        Optional<User> userOptional = userRepository.findUsersByEmail(email);
+
+        if (userOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "해당 이메일로 등록된 계정이 없습니다!"));
         }
+
+        // 인증 코드를 생성합니다.
+        String authenticationCode = EmailService.generateAuthenticationCode();
+
+        // 임시 토큰을 생성하고 이를 이메일 및 인증 코드와 연결시킵니다.
+        String resetPasswordToken = UUID.randomUUID().toString();
+        UserSuchRepository.save(new User_Such(resetPasswordToken, userOptional.get(), authenticationCode));
+
+        // 이메일을 통해 인증 코드를 보냅니다.
+        emailServcie.sendAuthenticationCode(email, authenticationCode);
+
+        // 인증 코드와 이메일로 새로운 비밀번호를 설정할 수 있는 링크를 반환합니다.
         return ResponseEntity.ok(Map.of(
-                "password", userEmail.get().getPassword()
+                "message", "인증 코드를 이메일로 보냈습니다.",
+                "resetPasswordLink", "/resetPassword?token=" + resetPasswordToken
         ));
+    }
+
+    @PostMapping("/api/users/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword, @RequestParam String authenticationCode) {
+        User_Such tokenRecord = userSuchRepository.findByToken(token);
+
+        // 토큰이 유효하지 않은 경우
+        if (tokenRecord == null || !tokenRecord.getAuthenticationCode().equals(authenticationCode)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid token or authentication code.");
+        }
+
+        // 토큰과 인증코드가 일치하면 비밀번호를 변경
+        User user = tokenRecord.getUser();
+        user.setPassword(newPassword);
+        userRepository.save(user);
+
+        // 토큰 정보를 데이터베이스에서 삭제
+        userSuchRepository.delete(tokenRecord);
+
+        return ResponseEntity.ok("Password has been successfully reset.");
     }
 
     @PostMapping("/infofind")

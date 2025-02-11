@@ -37,6 +37,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-batch")
     implementation("mysql:mysql-connector-java:8.0.29")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
     testImplementation("org.springframework.batch:spring-batch-test")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

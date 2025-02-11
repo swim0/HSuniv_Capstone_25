@@ -25,18 +25,20 @@ public class MyPageController {
     private final UserOrderRepository userOrderRepository;
     private final UserRepository userRepository;
     private final InterestRepository interestRepository;
-    private final UserService userService;
+
     public MyPageController(UserOrderRepository userOrderRepository, UserRepository userRepository, InterestRepository interestRepository, UserService userService){
         this.userOrderRepository = userOrderRepository;
         this.userRepository = userRepository;
         this.interestRepository = interestRepository;
-        this.userService = userService;
+
     }
 
     @PutMapping("MyPage/{userId}")
     public ResponseEntity<User> MyPage_vaild(@PathVariable("userId") String userId,
                                              @RequestParam("password") String password,
-                                             @RequestBody User updatedUser) {
+                                             @RequestBody User updatedUser,
+                                             @RequestBody User updatePayment)
+    {
         User user = userRepository.findUserByUserIdAndPassword(userId, password)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
@@ -50,9 +52,16 @@ public class MyPageController {
         if (updatedUser.getName() != null) user.setName(updatedUser.getName());
         if (updatedUser.getBirthDate() != null) user.setBirthDate(updatedUser.getBirthDate());
         if (updatedUser.getAge() != null) user.setAge(updatedUser.getAge());
+
+        // 결제 정보 추가
+        if(updatePayment.getCardType() != null) user.setCardType(updatePayment.getCardType());
+        if(updatePayment.getCardNumber() != null) user.setCardNumber(updatePayment.getCardNumber());
+
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
+
+
     @Transactional
     @DeleteMapping("/MyPage/{userId}")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId,@RequestParam String password) {
@@ -68,13 +77,8 @@ public class MyPageController {
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
     }
 
-    @GetMapping("/MyPage/{userId}/orders")
-    public ResponseEntity<Optional<User>> getOrders(@PathVariable("userId") String userId) {
-        Optional<User> userorders = userRepository.findUserByUserId(userId);
-        return ResponseEntity.ok(userorders);
-    }
 
-
+        // 사용자 관심목록 관련 API
     @GetMapping("/MyPage/{userId}/interests")
     public ResponseEntity<List<User_Interest>> getUserInterests(@PathVariable("userId") User userId) {
         Optional<User> user = userRepository.findUserByUserId(userId.getUserId());
@@ -88,6 +92,8 @@ public class MyPageController {
         // 4. 관심사 목록 반환
         return ResponseEntity.ok(userInterests.getBody());
     }
+
+
     @PostMapping("/MyPage/{userId}/add_interests")
     public ResponseEntity<User_Interest> createUserInterest(@PathVariable("userId") String userId, @RequestParam User_Interest.Genre genre) {
             User user = userRepository.findUserByUserId(userId)
@@ -100,8 +106,6 @@ public class MyPageController {
             interestRepository.save(userInterest);
             return ResponseEntity.status(HttpStatus.CREATED).body(userInterest);
         }
-
-
 
     @DeleteMapping("/MyPage/{userId}/delete_interests")
     public ResponseEntity<Void> deleteUserInterest(@PathVariable("userId")@RequestBody User userId, @RequestBody User_Interest.Genre genre) {
