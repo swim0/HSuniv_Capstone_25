@@ -62,15 +62,21 @@ public class MyPageController {
 
     @Transactional
     @DeleteMapping("/MyPage/{userId}")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId,@RequestParam String password) {
-        Optional<User> user = userRepository.findUserByUserIdAndPassword(userId,password);
-        if (user.isEmpty()) {
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId, @RequestParam String password) {
+        try {
+            Optional<User> user = userRepository.findUserByUserIdAndPassword(userId, password);
+            if (user.isEmpty()) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "아이디나 비밀번호가 잘못되었습니다"));
+            }
+            userRepository.delete(user.get());
+            return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
+        } catch (Exception e) {
             return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "아이디나 비밀번호가 잘못되었습니다"));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "회원 탈퇴 처리 중 오류가 발생했습니다"));
         }
-        userRepository.deleteUserByUserId(userId);
-        return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
     }
 
 
