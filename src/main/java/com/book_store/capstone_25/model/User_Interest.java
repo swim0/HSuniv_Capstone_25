@@ -4,21 +4,23 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Table (name = "user_interests")
+@Table(name = "user_interests")
 @Entity
 @Getter
 @Setter
 public class User_Interest {
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)  // 외래 키 컬럼명을 user_id로 변경
-    private User user;  //
 
-    @GeneratedValue
     @Id
-    @Column(name = "user_id", insertable = false, updatable = false)
-    private String user_id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Primary Key for User_Interest
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false) // Foreign Key to User
+    private User user;
+
     @Enumerated(EnumType.STRING)
-    private Genre genre;  // String이 아닌 Genre enum 타입으로 변경
+    @Column(name = "genre")  // Optional: specify column name
+    private Genre genre;  // Using Enum for Genre
 
     public enum Genre {
         풍자,

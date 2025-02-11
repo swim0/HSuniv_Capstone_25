@@ -33,6 +33,8 @@ public class User {
     private String address;
     @Column(name = "birthdate")
     private String birthDate;
+
+
     @Column(name = "cardnumber")
     private String cardNumber;
     @Column(name = "cardtype")
@@ -60,11 +62,6 @@ public class User {
         // 추가로 업데이트해야 할 필드가 있다면 여기에 추가하세요
     }
 
-
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-     List<User_order> user_order;
 
 
     @JsonIgnore

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 @lombok.Getter
 @lombok.Setter
 @Entity
+@Table(name = "user_such")
 public class User_Such {
 
     @Id

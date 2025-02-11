@@ -1,12 +1,10 @@
 package com.book_store.capstone_25.controller;
 
 import com.book_store.capstone_25.Repository.InterestRepository;
-import com.book_store.capstone_25.Repository.UserOrderRepository;
 import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.model.User_Interest;
 import com.book_store.capstone_25.service.UserService;
-import jakarta.transaction.Transactional;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +22,12 @@ import java.util.Optional;
 @RequestMapping({"/member"})
 @Setter
 public class MyPageController {
-    private final UserOrderRepository userOrderRepository;
+
     private final UserRepository userRepository;
     private final InterestRepository interestRepository;
     private final UserService userService;
 
-    public MyPageController(UserOrderRepository userOrderRepository, UserRepository userRepository, InterestRepository interestRepository, UserService userService){
-        this.userOrderRepository = userOrderRepository;
+    public MyPageController( UserRepository userRepository, InterestRepository interestRepository, UserService userService){
         this.userRepository = userRepository;
         this.interestRepository = interestRepository;
         this.userService = userService;
