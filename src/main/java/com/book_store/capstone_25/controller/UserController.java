@@ -116,41 +116,38 @@ public class UserController {
                     .body(Map.of("message", "해당 이메일로 등록된 계정이 없습니다!"));
         }
 
-        // 인증 코드를 생성합니다.
+        // 인증 코드 생성
         String authenticationCode = EmailService.generateAuthenticationCode();
 
-        // 임시 토큰을 생성하고 이를 이메일 및 인증 코드와 연결시킵니다.
-        String resetPasswordToken = UUID.randomUUID().toString();
-        UserSuchRepository.save(new User_Such(resetPasswordToken, userOptional.get(), authenticationCode));
+        // 인증 코드를 User_Such 테이블에 저장
+        String token = UUID.randomUUID().toString();
+        UserSuchRepository.save(new User_Such(token, userOptional.get(), authenticationCode));
 
-        // 이메일을 통해 인증 코드를 보냅니다.
+        // 이메일로 인증 코드 전송
         emailServcie.sendAuthenticationCode(email, authenticationCode);
 
-        // 인증 코드와 이메일로 새로운 비밀번호를 설정할 수 있는 링크를 반환합니다.
-        return ResponseEntity.ok(Map.of(
-                "message", "인증 코드를 이메일로 보냈습니다.",
-                "resetPasswordLink", "/resetPassword?token=" + resetPasswordToken
-        ));
+        return ResponseEntity.ok(Map.of("message", "인증 코드를 이메일로 보냈습니다."));
     }
 
-    @PostMapping("/api/users/resetPassword")
-    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword, @RequestParam String authenticationCode) {
-        User_Such tokenRecord = UserSuchRepository.findByToken(token);
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@RequestParam String email, @RequestParam String authenticationCode) {
+        User_Such userSuch = UserSuchRepository.findUser_SuchByUserEmailAndAuthenticationCode(email, authenticationCode);
 
-        // 토큰이 유효하지 않은 경우
-        if (tokenRecord == null || !tokenRecord.getAuthenticationCode().equals(authenticationCode)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid token or authentication code.");
+        if (userSuch == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "잘못된 인증 코드입니다."));
         }
 
-        // 토큰과 인증코드가 일치하면 비밀번호를 변경
-        User user = tokenRecord.getUser();
-        user.setPassword(newPassword);
-        userRepository.save(user);
+        // 인증 성공시 비밀번호 반환
+        String password = userSuch.getUser().getPassword();
 
-        // 토큰 정보를 데이터베이스에서 삭제
-        UserSuchRepository.delete(tokenRecord);
+        // 사용된 인증 코드 삭제
+        UserSuchRepository.delete(userSuch);
 
-        return ResponseEntity.ok("Password has been successfully reset.");
+        return ResponseEntity.ok(Map.of(
+                "message", "인증이 완료되었습니다.",
+                "password", password
+        ));
     }
 
     @PostMapping("/infofind")
