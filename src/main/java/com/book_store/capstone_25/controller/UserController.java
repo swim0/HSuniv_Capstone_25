@@ -30,14 +30,13 @@ public class UserController {
     private final EmailService emailServcie;
     private final UserRepository userRepository;;
     private final UserSuchRepository UserSuchRepository;
-    private final UserSuchRepository userSuchRepository;
 
-    public UserController(UserRepository userRepository, UserService userService, EmailService emailServcie,com.book_store.capstone_25.Repository.UserSuchRepository userSuchRepository) { // 생성자 주입
+
+    public UserController(UserRepository userRepository, UserService userService, EmailService emailServcie, com.book_store.capstone_25.Repository.UserSuchRepository userSuchRepository, com.book_store.capstone_25.Repository.UserSuchRepository userSuchRepository1) { // 생성자 주입
         this.userService = userService;
         this.userRepository = userRepository;
         this.emailServcie = emailServcie;
         UserSuchRepository = userSuchRepository;
-        this.userSuchRepository = userSuchRepository;
     }
 
     // 회원가입 검증 코드
@@ -136,7 +135,7 @@ public class UserController {
 
     @PostMapping("/api/users/resetPassword")
     public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword, @RequestParam String authenticationCode) {
-        User_Such tokenRecord = userSuchRepository.findByToken(token);
+        User_Such tokenRecord = UserSuchRepository.findByToken(token);
 
         // 토큰이 유효하지 않은 경우
         if (tokenRecord == null || !tokenRecord.getAuthenticationCode().equals(authenticationCode)) {
@@ -149,7 +148,7 @@ public class UserController {
         userRepository.save(user);
 
         // 토큰 정보를 데이터베이스에서 삭제
-        userSuchRepository.delete(tokenRecord);
+        UserSuchRepository.delete(tokenRecord);
 
         return ResponseEntity.ok("Password has been successfully reset.");
     }
