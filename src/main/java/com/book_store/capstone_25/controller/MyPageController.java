@@ -10,6 +10,8 @@ import jakarta.transaction.Transactional;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,19 +27,19 @@ public class MyPageController {
     private final UserOrderRepository userOrderRepository;
     private final UserRepository userRepository;
     private final InterestRepository interestRepository;
+    private final UserService userService;
 
     public MyPageController(UserOrderRepository userOrderRepository, UserRepository userRepository, InterestRepository interestRepository, UserService userService){
         this.userOrderRepository = userOrderRepository;
         this.userRepository = userRepository;
         this.interestRepository = interestRepository;
-
+        this.userService = userService;
     }
 
     @PutMapping("MyPage/{userId}")
     public ResponseEntity<User> MyPage_vaild(@PathVariable("userId") String userId,
                                              @RequestParam("password") String password,
-                                             @RequestBody User updatedUser,
-                                             @RequestBody User updatePayment)
+                                             @RequestBody User updatedUser)
     {
         User user = userRepository.findUserByUserIdAndPassword(userId, password)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
@@ -54,26 +56,27 @@ public class MyPageController {
         if (updatedUser.getAge() != null) user.setAge(updatedUser.getAge());
 
         // 결제 정보 추가
-        if(updatePayment.getCardType() != null) user.setCardType(updatePayment.getCardType());
-        if(updatePayment.getCardNumber() != null) user.setCardNumber(updatePayment.getCardNumber());
+        if(updatedUser.getCardType() != null) user.setCardType(updatedUser.getCardType());
+        if(updatedUser.getCardNumber() != null) user.setCardNumber(updatedUser.getCardNumber());
 
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
 
 
-    @Transactional
-    @DeleteMapping("/MyPage/{userId}")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId,@RequestParam String password) {
-        Optional<User> user = userRepository.findUserByUserIdAndPassword(userId,password);
+    @DeleteMapping("/MyPage")
+    public ResponseEntity<Map<String, String>> deleteUser(@RequestBody Map<String, String> request,
+                                                          @AuthenticationPrincipal UserDetails userDetails) {
+        String password = request.get("password");
+        String userId = userDetails.getUsername(); // 현재 로그인된 사용자 ID 가져오기
 
-        if (user.isEmpty()) {
+        boolean deleted = userService.deleteUser(userId, password);
+        if (!deleted) {
             return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "아이디나 비밀번호가 잘못되었습니다"));
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "비밀번호가 잘못되었습니다."));
         }
 
-        userRepository.deleteUserByUserId(userId);
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
     }
 
