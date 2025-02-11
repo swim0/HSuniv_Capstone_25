@@ -5,11 +5,10 @@ import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.model.User_Interest;
 import com.book_store.capstone_25.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -61,19 +60,16 @@ public class MyPageController {
     }
 
 
-    @DeleteMapping("/MyPage")
-    public ResponseEntity<Map<String, String>> deleteUser(@RequestBody Map<String, String> request,
-                                                          @AuthenticationPrincipal UserDetails userDetails) {
-        String password = request.get("password");
-        String userId = userDetails.getUsername(); // 현재 로그인된 사용자 ID 가져오기
-
-        boolean deleted = userService.deleteUser(userId, password);
-        if (!deleted) {
+    @Transactional
+    @DeleteMapping("/MyPage/{userId}")
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId,@RequestParam String password) {
+        Optional<User> user = userRepository.findUserByUserIdAndPassword(userId,password);
+        if (user.isEmpty()) {
             return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "비밀번호가 잘못되었습니다"));
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "아이디나 비밀번호가 잘못되었습니다"));
         }
-
+        userRepository.deleteUserByUserId(userId);
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
     }
 
