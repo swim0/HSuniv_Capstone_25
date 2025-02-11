@@ -74,7 +74,7 @@ public class MyPageController {
         if (!deleted) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "비밀번호가 잘못되었습니다."));
+                    .body(Map.of("message", "비밀번호가 잘못되었습니다"));
         }
 
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
