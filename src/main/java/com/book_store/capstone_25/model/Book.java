@@ -25,8 +25,7 @@ public class Book {
     private BigDecimal price;
 
     @Lob
-    private byte[] bookImage;
-    private String imageType;
+    private String imageUrl;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

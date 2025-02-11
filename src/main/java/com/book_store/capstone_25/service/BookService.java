@@ -22,22 +22,17 @@ public class BookService {
 
     public Book createBookFromResource(String title, String author, String publisher,
                                        String genre, BigDecimal price, String resourcePath) {
-        try {
-            // 클래스패스의 리소스에서 이미지 읽기
-            ClassPathResource resource = new ClassPathResource(resourcePath);
-            byte[] imageBytes = StreamUtils.copyToByteArray(((ClassPathResource) resource).getInputStream());
+        Book book = new Book();
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setPublisher(publisher);
+        book.setGenre(genre);
+        book.setPrice(price);
 
-            Book book = new Book();
-            book.setTitle(title);
-            book.setAuthor(author);
-            book.setPublisher(publisher);
-            book.setGenre(genre);
-            book.setPrice(price);
-            book.setBookImage(imageBytes);
-            book.setImageType("image/jpeg"); // 또는 적절한 타입
-            return bookRepository.save(book);
-        } catch (IOException e) {
-            throw new RuntimeException("이미지 저장 실패", e);
-        }
+        // 이미지 경로 저장 (예: "/images/littleprince.jpg")
+        book.setImageUrl("/" + resourcePath);
+
+        return bookRepository.save(book);
     }
+
 }

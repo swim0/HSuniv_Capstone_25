@@ -32,7 +32,6 @@ public class User {
     @Column(name = "address")
     private String address;
     @Column(name = "birthdate")
-
     private String birthDate;
     @Column(name = "cardnumber")
     private String cardNumber;

@@ -11,7 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 // BookController.java
 @RestController
@@ -31,10 +35,14 @@ public class BookController {
         book.setGenre(bookDTO.getGenre());
         book.setPrice(bookDTO.getPrice());
 
-        // 이미지 처리
+        // 이미지 저장 처리
         if (bookDTO.getImage() != null && !bookDTO.getImage().isEmpty()) {
-            book.setBookImage(bookDTO.getImage().getBytes());
-            book.setImageType(bookDTO.getImage().getContentType());
+            String fileName = UUID.randomUUID() + "_" + bookDTO.getImage().getOriginalFilename();
+            Path filePath = Paths.get("src/main/resources/static/images/" + fileName);
+            Files.write(filePath, bookDTO.getImage().getBytes());
+
+            // 저장된 이미지 경로를 DB에 저장
+            book.setImageUrl("/images/" + fileName);
         }
 
         return ResponseEntity.ok(bookRepository.save(book));
@@ -43,30 +51,32 @@ public class BookController {
     // add_books는 백엔드 테스트용도 프론트 분들은 신경쓰지마세요
     @GetMapping("/add_books")
     public ResponseEntity<Book> registerBook() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/littleprince.jpg";
+
         Book book = bookService.createBookFromResource(
                 "어린왕자",
                 "생텍쥐페리",
                 "문학동네",
                 "소설",
                 new BigDecimal("12000"),
-                "static/images/littleprince.jpg"
+                imagePath
         );
+
         return ResponseEntity.ok(book);
     }
 
     // 이미지 조회
     @GetMapping("/{id}/image")
-    public ResponseEntity<byte[]> getBookImage(@PathVariable Long id) {
+    public ResponseEntity<String> getBookImage(@PathVariable Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        if (book.getBookImage() == null) {
+        if (book.getImageUrl() == null || book.getImageUrl().isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(book.getImageType()))
-                .body(book.getBookImage());
+        return ResponseEntity.ok(book.getImageUrl());
     }
 
     // 전체 책 목록 조회
