@@ -3,6 +3,7 @@ package com.book_store.capstone_25.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.List;
 
@@ -44,6 +45,8 @@ public class User {
     private Gender gender;
 
 
+    @Getter
+    // UserInterest 리스트
 
 
     public enum Gender {
@@ -62,7 +65,9 @@ public class User {
         // 추가로 업데이트해야 할 필드가 있다면 여기에 추가하세요
     }
 
-
+    public Iterable<? extends User_Interest> getUserInterests() {
+        return this.user_interest;
+    }
 
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
