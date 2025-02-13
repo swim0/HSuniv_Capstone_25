@@ -3,6 +3,8 @@ package com.book_store.capstone_25.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Table(name = "user_interests")
@@ -23,7 +25,7 @@ public class User_Interest {
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_interests_genres", joinColumns = @JoinColumn(name = "user_interest_id"))
     @Column(name = "genre")
-    private List<Genre> genres;
+    private List<Genre> genres = new ArrayList<>();
 
     public enum Genre {
         풍자,

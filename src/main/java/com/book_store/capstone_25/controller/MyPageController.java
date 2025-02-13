@@ -12,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 @RestController
@@ -75,55 +73,86 @@ public class MyPageController {
         // User와 연관된 UserOrder와 UserInterest를 삭제
 
         interestRepository.deleteAll(currentUser.getUserInterests());
-
-        // 이제 안전하게 User를 삭제할 수 있습니다.
         userRepository.delete(currentUser);
 
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
     }
 
 
+
+    // 여기서부터 userId는 Long이므로 users 테이블의 id(유저번호) 입니다.
+    // 해당 API는 특정 유저 관심분야 조회입니다.
     @GetMapping("/MyPage/{userId}/interests")
-    public ResponseEntity<List<User_Interest>> getUserInterests(@PathVariable("userId") Long userId, @RequestParam User_Interest.Genre genre) {
-        List<User_Interest> userInterests = interestRepository.findByUser_IdAndGenresContains(userId, genre);
+    public ResponseEntity<List<User_Interest.Genre>> getUserInterests(@PathVariable("userId") Long userId) {
+        // 1. User_Interest 객체를 User ID로 조회
+        Optional<User_Interest> userInterests = interestRepository.findByUser_Id(userId);
+
+        // 2. 데이터가 없는 경우 404 응답
         if (userInterests.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(userInterests);
+
+        // 3. User_Interest 객체에서 genres 리스트 추출
+        List<User_Interest.Genre> genres = userInterests.get().getGenres();
+
+        // 4. genres 리스트가 비어 있으면 404 응답
+        if (genres.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 5. genres 리스트 반환
+        return ResponseEntity.ok(genres);
     }
 
 
 
+    // 관심분야 추가
     @PostMapping("/MyPage/{userId}/add_interests")
     public ResponseEntity<User_Interest> createUserInterest(
-            @PathVariable("userId") String userId,
-            @RequestParam User_Interest.Genre genre
+            @PathVariable("userId") Long userId,
+            @RequestParam String genre
     ) {
-        User user = userRepository.findUserByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + userId));
+        // 1. User 객체 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
 
-        User_Interest userInterest = interestRepository.findByUser(user)
-                .stream()
-                .findFirst()
+        // 2. User_Interest 가져오기 (없으면 새로 생성)
+        User_Interest userInterest = interestRepository.findByUser_Id(userId)
                 .orElse(new User_Interest());
+        userInterest.setUser(user);  // User 설정
 
-        userInterest.setUser(user);
+        // 3. genres 초기화 및 중복 확인
+        List<User_Interest.Genre> genres = userInterest.getGenres();
+        if (genres == null) {
+            genres = new ArrayList<>();
+        }
 
-        // 중복 방지 후 추가
-        if (!userInterest.getGenres().contains(genre)) {
-            userInterest.getGenres().add(genre);
+        // 4. 한글 문자열을 Enum으로 매핑
+        User_Interest.Genre selectedGenre;
+        try {
+            selectedGenre = User_Interest.Genre.valueOf(genre);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null); // 잘못된 Enum 값일 경우
+        }
+
+        // 5. 중복 확인 후 추가
+        if (!genres.contains(selectedGenre)) {
+            genres.add(selectedGenre);
+            userInterest.setGenres(genres);
             interestRepository.save(userInterest);
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userInterest);
     }
 
+
+    // 관심분야 삭제
     @DeleteMapping("/MyPage/{userId}/delete_interests")
     public ResponseEntity<Void> deleteUserInterest(
-            @PathVariable("userId") String userId,
+            @PathVariable("userId") Long userId,
             @RequestParam User_Interest.Genre genre
     ) {
-        User user = userRepository.findUserByUserId(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + userId));
 
         User_Interest userInterest = interestRepository.findByUser(user)

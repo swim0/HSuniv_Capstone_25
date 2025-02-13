@@ -25,7 +25,9 @@ public class BookController {
 
     private final BookRepository bookRepository;
     private final BookService bookService;
-    // 책 정보 저장 (이미지 포함)
+
+
+    // 책 정보 저장 (이미지 포함) 이미지 경로 src/main/java/resource/static/images
     @PostMapping("/product")
     public ResponseEntity<Book> createBook(@ModelAttribute BookDTO bookDTO) throws IOException {
         Book book = new Book();
@@ -48,7 +50,7 @@ public class BookController {
         return ResponseEntity.ok(bookRepository.save(book));
     }
 
-    // add_books는 백엔드 테스트용도 프론트 분들은 신경쓰지마세요
+    // add_books는 백엔드 테스트용도! 프론트 분들도 참고하세요
     @GetMapping("/add_books")
     public ResponseEntity<Book> registerBook() {
         // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
@@ -64,19 +66,6 @@ public class BookController {
         );
 
         return ResponseEntity.ok(book);
-    }
-
-    // 이미지 조회
-    @GetMapping("/{id}/image")
-    public ResponseEntity<String> getBookImage(@PathVariable Long id) {
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
-
-        if (book.getImageUrl() == null || book.getImageUrl().isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(book.getImageUrl());
     }
 
     // 전체 책 목록 조회
