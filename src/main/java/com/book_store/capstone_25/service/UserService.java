@@ -42,20 +42,6 @@ public class UserService {
         return optionalUser.get();
     }
 
-    public void addInterest(String userId, User_Interest.Genre genre) {
-        User_Interest userInterest = new User_Interest();
-        userInterest.getUser().setUserId(userId);
-        userInterest.setGenre(genre);
-        interestRepository.save(userInterest);
-    }
-
-    public User_Interest removeInterest(User user_id, User_Interest.Genre genre) {
-        User_Interest userInterest = new User_Interest();
-        userInterest.getUser().setUserId(user_id.getUserId());
-        userInterest.setGenre(genre);
-        return interestRepository.save(userInterest);
-    }
-
 
 }
 

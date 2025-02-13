@@ -83,38 +83,59 @@ public class MyPageController {
     }
 
 
-        // 사용자 관심목록 관련 API
     @GetMapping("/MyPage/{userId}/interests")
-    public ResponseEntity<List<User_Interest>> getUserInterests(@PathVariable("userId") User userId) {
-        Optional<User> user = userRepository.findUserByUserId(userId.getUserId());
-        // 2. 사용자가 존재하지 않으면 404 Not Found 응답 반환
-        if (user == null) {
+    public ResponseEntity<List<User_Interest>> getUserInterests(@PathVariable("userId") Long userId, @RequestParam User_Interest.Genre genre) {
+        List<User_Interest> userInterests = interestRepository.findByUser_IdAndGenresContains(userId, genre);
+        if (userInterests.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        // 3. 사용자의 관심사 목록 조회
-        ResponseEntity<List<User_Interest>> userInterests = getUserInterests(userId);
-
-        // 4. 관심사 목록 반환
-        return ResponseEntity.ok(userInterests.getBody());
+        return ResponseEntity.ok(userInterests);
     }
 
 
+
     @PostMapping("/MyPage/{userId}/add_interests")
-    public ResponseEntity<User_Interest> createUserInterest(@PathVariable("userId") String userId, @RequestParam User_Interest.Genre genre) {
-            User user = userRepository.findUserByUserId(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + userId));
+    public ResponseEntity<User_Interest> createUserInterest(
+            @PathVariable("userId") String userId,
+            @RequestParam User_Interest.Genre genre
+    ) {
+        User user = userRepository.findUserByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + userId));
 
-            User_Interest userInterest = new User_Interest();
-            userInterest.setUser(user); // User 객체 설정
-            userInterest.setGenre(genre);
+        User_Interest userInterest = interestRepository.findByUser(user)
+                .stream()
+                .findFirst()
+                .orElse(new User_Interest());
 
+        userInterest.setUser(user);
+
+        // 중복 방지 후 추가
+        if (!userInterest.getGenres().contains(genre)) {
+            userInterest.getGenres().add(genre);
             interestRepository.save(userInterest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(userInterest);
         }
 
+        return ResponseEntity.status(HttpStatus.CREATED).body(userInterest);
+    }
+
     @DeleteMapping("/MyPage/{userId}/delete_interests")
-    public ResponseEntity<Void> deleteUserInterest(@PathVariable("userId")@RequestBody User userId, @RequestBody User_Interest.Genre genre) {
-        interestRepository.deleteUser_InterestByUserAndGenre(userId, genre);
+    public ResponseEntity<Void> deleteUserInterest(
+            @PathVariable("userId") String userId,
+            @RequestParam User_Interest.Genre genre
+    ) {
+        User user = userRepository.findUserByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + userId));
+
+        User_Interest userInterest = interestRepository.findByUser(user)
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        if (userInterest != null && userInterest.getGenres().contains(genre)) {
+            userInterest.getGenres().remove(genre);
+            interestRepository.save(userInterest);
+        }
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

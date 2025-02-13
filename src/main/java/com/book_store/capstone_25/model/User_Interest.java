@@ -3,6 +3,7 @@ package com.book_store.capstone_25.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.List;
 
 @Table(name = "user_interests")
 @Entity
@@ -11,16 +12,18 @@ import lombok.Setter;
 public class User_Interest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Primary Key for User_Interest
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false) // Foreign Key to User
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-
+    @ElementCollection(targetClass = Genre.class)
     @Enumerated(EnumType.STRING)
-    @Column(name = "genre")  // Optional: specify column name
-    private Genre genre;  // Using Enum for Genre
+    @CollectionTable(name = "user_interests_genres", joinColumns = @JoinColumn(name = "user_interest_id"))
+    @Column(name = "genre")
+    private List<Genre> genres;
 
     public enum Genre {
         풍자,
