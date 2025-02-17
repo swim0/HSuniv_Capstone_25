@@ -113,7 +113,7 @@ public class MyPageController {
             @RequestParam String genre
     ) {
         // 1. User 객체 조회
-        User user = userRepository.findById(userId)
+        User user = (User) userRepository.findUsersById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
 
         // 2. User_Interest 가져오기 (없으면 새로 생성)

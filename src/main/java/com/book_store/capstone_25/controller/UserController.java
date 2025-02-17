@@ -150,7 +150,7 @@ public class UserController {
         ));
     }
 
-    @PostMapping("/infofind")
+    @PostMapping("/infofind") //회원정보조회
     public ResponseEntity<?> userInfo(@RequestParam String userId) {
         Optional<User> userinfo = userRepository.findUserByUserId(userId);
         if (userinfo.isEmpty()) {
