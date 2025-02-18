@@ -1,10 +1,12 @@
 package com.book_store.capstone_25.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -13,7 +15,7 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "user_id")
@@ -45,6 +47,7 @@ public class User {
     private Gender gender;
 
 
+
     @Getter
     // UserInterest 리스트
 
@@ -70,6 +73,7 @@ public class User {
     }
 
     @JsonIgnore
+    @JsonManagedReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
      List<User_Interest> user_interest;
 

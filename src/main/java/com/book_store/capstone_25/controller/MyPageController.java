@@ -84,27 +84,15 @@ public class MyPageController {
     // 해당 API는 특정 유저 관심분야 조회입니다.
     @GetMapping("/MyPage/{userId}/interests")
     public ResponseEntity<List<User_Interest.Genre>> getUserInterests(@PathVariable("userId") Long userId) {
-        // 1. User_Interest 객체를 User ID로 조회
         Optional<User_Interest> userInterests = interestRepository.findByUser_Id(userId);
 
-        // 2. 데이터가 없는 경우 404 응답
         if (userInterests.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(Collections.emptyList());  // 빈 배열 반환
         }
 
-        // 3. User_Interest 객체에서 genres 리스트 추출
         List<User_Interest.Genre> genres = userInterests.get().getGenres();
-
-        // 4. genres 리스트가 비어 있으면 404 응답
-        if (genres.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // 5. genres 리스트 반환
         return ResponseEntity.ok(genres);
     }
-
-
 
     // 관심분야 추가
     @PostMapping("/MyPage/{userId}/add_interests")
@@ -145,7 +133,6 @@ public class MyPageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userInterest);
     }
 
-
     // 관심분야 삭제
     @DeleteMapping("/MyPage/{userId}/delete_interests")
     public ResponseEntity<Void> deleteUserInterest(
@@ -156,16 +143,14 @@ public class MyPageController {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + userId));
 
         User_Interest userInterest = interestRepository.findByUser(user)
-                .stream()
-                .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("No interests found for user"));
 
-        if (userInterest != null && userInterest.getGenres().contains(genre)) {
-            userInterest.getGenres().remove(genre);
+        if (userInterest.getGenres().remove(genre)) {
             interestRepository.save(userInterest);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 찾지 못한 경우
     }
 }
 
