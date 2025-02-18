@@ -80,7 +80,7 @@ public class MyPageController {
 
 
 
-    // 여기서부터 userId는 Long이므로 users 테이블의 id(유저번호) 입니다.
+    // 여기서부터 userId는 Long이므로 users 테이블의 id(유저번호) 입니다. Infofind 에서 확인하실 수 있게 해놓았습니다.
     // 해당 API는 특정 유저 관심분야 조회입니다.
     @GetMapping("/MyPage/{userId}/interests")
     public ResponseEntity<List<User_Interest.Genre>> getUserInterests(@PathVariable("userId") Long userId) {

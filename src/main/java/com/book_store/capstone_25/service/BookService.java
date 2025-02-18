@@ -35,4 +35,18 @@ public class BookService {
         return bookRepository.save(book);
     }
 
+
+    public List<Book> searchBooks(String title, String author,String publisher, String genre) {
+        if (title != null && !title.isEmpty()) {
+            return bookRepository.findBookByTitleContainingIgnoreCase(title);
+        } else if (author != null && !author.isEmpty()) {
+            return bookRepository.findBookByAuthorContainingIgnoreCase(author);
+        } else if (publisher != null && !publisher.isEmpty()) {
+            return bookRepository.findBookByPublisherContainingIgnoreCase(publisher);
+        } else if (genre != null && !genre.isEmpty()) {
+            return bookRepository.findBookByGenreContainingIgnoreCase(genre);
+        }
+        return bookRepository.findAll();
+    }
+
 }

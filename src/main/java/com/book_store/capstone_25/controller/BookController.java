@@ -57,10 +57,10 @@ public class BookController {
         String imagePath = "/images/littleprince.jpg";
 
         Book book = bookService.createBookFromResource(
-                "어린왕자",
-                "생텍쥐페리",
+                "대충아무책",
+                "수영",
                 "문학동네",
-                "소설",
+                "전후소설",
                 new BigDecimal("12000"),
                 imagePath
         );
@@ -74,11 +74,14 @@ public class BookController {
         return ResponseEntity.ok(bookRepository.findAll());
     }
 
-    // 특정 책 조회
-    @GetMapping("/goods/{id}")
-    public ResponseEntity<Book> getBook(@PathVariable Long id) {
-        return bookRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+
+    // 검색 기능
+    @GetMapping("/search")
+    public ResponseEntity<List<Book>> searchBooks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) String publishe,
+            @RequestParam(required = false) String genre) {
+        return ResponseEntity.ok(bookService.searchBooks(title, author,publishe, genre));
     }
 }
