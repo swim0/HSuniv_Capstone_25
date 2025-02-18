@@ -152,7 +152,7 @@ public class MyPageController {
             @PathVariable("userId") Long userId,
             @RequestParam User_Interest.Genre genre
     ) {
-        User user = userRepository.findById(userId)
+        User user = (User) userRepository.findUsersById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + userId));
 
         User_Interest userInterest = interestRepository.findByUser(user)
