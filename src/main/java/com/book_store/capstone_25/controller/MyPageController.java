@@ -52,7 +52,8 @@ public class MyPageController {
         // 결제 정보 추가
         if(updatedUser.getCardType() != null) user.setCardType(updatedUser.getCardType());
         if(updatedUser.getCardNumber() != null) user.setCardNumber(updatedUser.getCardNumber());
-
+        // 계좌 이체 정보
+        if(updatedUser.getBankAccount() != null) user.setBankAccount(updatedUser.getBankAccount());
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }

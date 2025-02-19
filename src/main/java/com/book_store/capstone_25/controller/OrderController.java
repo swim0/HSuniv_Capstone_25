@@ -15,7 +15,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @PostMapping("/create")
+    @PostMapping("/create") // 주문 생성입니다. 도서 구매 기능에 속합니다
     public ResponseEntity<?> createOrder(@RequestParam Long userId, @RequestBody OrderRequest request) {
         Order order = orderService.placeOrder(userId, request);
         return ResponseEntity.ok(order);

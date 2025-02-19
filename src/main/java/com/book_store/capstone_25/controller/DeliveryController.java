@@ -15,7 +15,7 @@ public class DeliveryController {
 
     private final DeliveryService deliveryService;
 
-    @PostMapping("/create")
+    @PostMapping("/create") // 배송 현황에 속하는 컨트롤러입니다.
     public ResponseEntity<?> createDelivery(@RequestParam Long orderId, @RequestBody DeliveryRequest request) {
         Delivery delivery = deliveryService.createDelivery(orderId, request);
         return ResponseEntity.ok(delivery);

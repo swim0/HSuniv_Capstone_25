@@ -44,6 +44,8 @@ public class User {
     private String cardNumber;
     @Column(name = "cardtype")
     private String cardType;
+    @Column(name = "bank_account")
+    private String bankAccount;
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
@@ -67,6 +69,7 @@ public class User {
         this.age = updatedUser.age;
         this.cardNumber = updatedUser.cardNumber;
         this.cardType = updatedUser.cardType;
+        this.bankAccount = updatedUser.bankAccount;
         // 추가로 업데이트해야 할 필드가 있다면 여기에 추가하세요
     }
 
