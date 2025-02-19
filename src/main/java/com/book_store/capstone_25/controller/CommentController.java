@@ -27,7 +27,7 @@ public class CommentController {
     // 특정 회원의 댓글 조회
     @GetMapping("/user/{userId}/comments")
     public ResponseEntity<List<Comment>> getCommentsByUser(@PathVariable Long userId) {
-        Optional<User> user = userRepository.findById(userId);
+        Optional<User> user = userRepository.findUsersById(userId);
         if (user.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -39,8 +39,8 @@ public class CommentController {
     public ResponseEntity<Comment> addComment(@PathVariable Long bookId,
                                               @PathVariable Long userId,
                                               @RequestParam String content) {
-        Optional<Book> book = bookRepository.findById(bookId);
-        Optional<User> user = userRepository.findById(userId);
+        Optional<Book> book = bookRepository.findBookByBookId(bookId);
+        Optional<User> user = userRepository.findUsersById(userId);
 
         if (book.isEmpty() || user.isEmpty()) {
             return ResponseEntity.notFound().build();
