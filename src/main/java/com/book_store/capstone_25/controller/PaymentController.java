@@ -17,7 +17,7 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    @PostMapping("/pay_process")
+    @PostMapping("/pay_process") //결제 처리 로직입니다.
     public ResponseEntity<Payment> processPayment(@RequestParam Long orderId,
                                                   @RequestParam String method,
                                                   @RequestParam String userId) {

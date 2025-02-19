@@ -19,5 +19,12 @@ public class OrderRequest {
     private String couponCode; // 쿠폰 코드 (선택 사항)
     private double totalPrice;
 
+    @Getter
+    @Setter
+    public static class OrderItemRequest {
+        private Long bookId; // 도서 ID
+        private int quantity; // 수량
+    }
+
 }
 

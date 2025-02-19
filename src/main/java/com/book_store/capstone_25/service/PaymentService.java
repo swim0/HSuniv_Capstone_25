@@ -30,7 +30,7 @@ public class PaymentService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
 
-        User user = userRepository.findByUserId(userId)
+        User user = userRepository.findUserByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // 🔹 결제 수단 확인 및 검증
@@ -53,7 +53,7 @@ public class PaymentService {
         payment.setPaid(true);
         payment.setPaymentDate(LocalDateTime.now());
 
-        order.setStatus("결제완료");
+        order.setStatus("배송완료");
 
         return paymentRepository.save(payment);
     }
