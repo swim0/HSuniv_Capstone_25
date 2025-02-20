@@ -57,16 +57,87 @@ public class BookController {
         String imagePath = "/images/littleprince.jpg";
 
         Book book = bookService.createBookFromResource(
-                "대충아무책",
-                "수영",
+                "어린왕자",
+                "생택쥐페리",
                 "문학동네",
-                "전후소설",
+                "동화",
                 new BigDecimal("12000"),
                 imagePath
         );
 
         return ResponseEntity.ok(book);
     }
+
+    @GetMapping("/add_book2")
+    public ResponseEntity<Book> add_book2() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/barsker.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "바스커빌가의 사냥개",
+                "아서 코난 도일",
+                "민음사",
+                "고전",
+                new BigDecimal("11340"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book3")
+    public ResponseEntity<Book> add_book3() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/kr.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "한국 전후소설 연구",
+                "최예열",
+                "역락",
+                "전후소설",
+                new BigDecimal("9500"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book4")
+    public ResponseEntity<Book> add_book4() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/Animal_Farm.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "동물농장",
+                "조지오웰",
+                "교보문고",
+                "풍자",
+                new BigDecimal("7200"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book5")
+    public ResponseEntity<Book> add_book5() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/city.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "눈먼 자들의 도시",
+                "사리마구",
+                "교보문고",
+                "디스토피아",
+                new BigDecimal("13200"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+
+
 
     // 전체 책 목록 조회
     @GetMapping
