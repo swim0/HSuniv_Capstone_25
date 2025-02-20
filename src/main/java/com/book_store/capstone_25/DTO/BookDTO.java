@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 // BookDTO.java
 @Getter @Setter
 public class BookDTO {
+    private Long bookId;
     private String title;
     private String author;
     private String publisher;
