@@ -45,14 +45,15 @@ public class BookService {
 
 
     public List<Book> searchBooks(Long userId, String title, String author, String publisher, String genre) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        // 🔹 userId가 null이 아닐 때만 사용자 조회 및 검색 기록 저장
+        if (userId != null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            SearchHistory searchHistory = new SearchHistory(user, title, author, publisher, genre);
+            searchHistoryRepository.save(searchHistory);
+        }
 
-        // 🔹 검색 기록 저장
-        SearchHistory searchHistory = new SearchHistory(user, title, author, publisher, genre);
-        searchHistoryRepository.save(searchHistory);
-
-        // 🔹 도서 검색 로직
+        // 🔹 도서 검색 로직 (변경 없음)
         if (title != null && !title.isEmpty()) {
             return bookRepository.findBookByTitleContainingIgnoreCase(title);
         } else if (author != null && !author.isEmpty()) {
@@ -64,5 +65,6 @@ public class BookService {
         }
         return bookRepository.findAll();
     }
+
 
 }

@@ -156,15 +156,14 @@ public class BookController {
     public ResponseEntity<List<Book>> getAllBooks() {
         return ResponseEntity.ok(bookRepository.findAll());
     }
-    
-    
+
     // 검색 기능
     @GetMapping("/search")
     public ResponseEntity<List<Book>> searchBooks(
-            @RequestParam Long userId, // 사용자 ID 추가
+            @RequestParam(required = false) Long userId, //  userId가 선택적 (Optional) -> 로그인 시에만 검색기록 수집
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String author,
-            @RequestParam(required = false) String publisher, 
+            @RequestParam(required = false) String publisher,
             @RequestParam(required = false) String genre) {
         return ResponseEntity.ok(bookService.searchBooks(userId, title, author, publisher, genre));
     }
