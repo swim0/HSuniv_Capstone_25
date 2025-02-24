@@ -10,7 +10,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItemRequest {
-    private Long bookId; // 주문할 도서 ID
-    private int quantity; // 주문 수량
+    private Long bookId;
+    private String bookTitle;
+    private int quantity;
+    private double price;
 }
 

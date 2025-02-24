@@ -22,7 +22,8 @@ public class CommentController {
     private final CommentService commentService;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final CommentRepository commentRepository;
+
+
 
     // 특정 회원의 댓글 조회
     @GetMapping("/user/{userId}/comments")
@@ -46,7 +47,7 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         }
 
-        Comment savedComment = commentService.addComment(book.get(), user.get(), content);
+        Comment savedComment = commentService.addComment(book.get().getBookId(), user.get().getId(), content);
         return ResponseEntity.ok(savedComment);
     }
 

@@ -1,5 +1,6 @@
 package com.book_store.capstone_25.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +29,7 @@ public class Coupon {
     private double discountPercent; // 비율 할인 (예: 10%)
     private double minOrderAmount; // 최소 주문 금액 제한
     private boolean isUsed; // 사용 여부
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime expiryDate; // 만료 날짜
 
     // 쿠폰이 사용 가능한 상태인지 확인

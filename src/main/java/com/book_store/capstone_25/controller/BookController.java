@@ -2,8 +2,13 @@ package com.book_store.capstone_25.controller;
 
 import com.book_store.capstone_25.DTO.BookDTO;
 import com.book_store.capstone_25.Repository.BookRepository;
+import com.book_store.capstone_25.Repository.SearchHistoryRepository;
+import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.Book;
+import com.book_store.capstone_25.model.SearchHistory;
+import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.service.BookService;
+import com.book_store.capstone_25.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +30,8 @@ public class BookController {
 
     private final BookRepository bookRepository;
     private final BookService bookService;
-
+    private final UserRepository userRepository;
+    private final SearchHistoryRepository searchHistoryRepository;
 
     // 책 정보 저장 (이미지 포함) 이미지 경로 src/main/java/resource/static/images
     @PostMapping("/product")
@@ -137,22 +143,36 @@ public class BookController {
     }
 
 
-
+    // 특정 책 조회
+    @GetMapping("/goods/{id}")
+    public ResponseEntity<Book> getBook(@PathVariable Long id) {
+        return bookRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     // 전체 책 목록 조회
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks() {
         return ResponseEntity.ok(bookRepository.findAll());
     }
-
-
+    
+    
     // 검색 기능
     @GetMapping("/search")
     public ResponseEntity<List<Book>> searchBooks(
+            @RequestParam Long userId, // 사용자 ID 추가
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String author,
-            @RequestParam(required = false) String publishe,
+            @RequestParam(required = false) String publisher, 
             @RequestParam(required = false) String genre) {
-        return ResponseEntity.ok(bookService.searchBooks(title, author,publishe, genre));
+        return ResponseEntity.ok(bookService.searchBooks(userId, title, author, publisher, genre));
+    }
+    // 특정 유저 검색기록 조회
+    @GetMapping("/search/history")
+    public ResponseEntity<List<SearchHistory>> getUserSearchHistory(@RequestParam Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        return ResponseEntity.ok(searchHistoryRepository.findByUserOrderBySearchedAtDesc(user));
     }
 }

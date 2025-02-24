@@ -37,7 +37,7 @@ public class Order {
     private Delivery delivery; // 배송 정보
 
     private LocalDateTime orderDate; // 주문 날짜
-    private String status; // 주문 상태 (예: PENDING, PAID, SHIPPED, DELIVERED)
+    private String status; // 주문 상태 (예: 배송준비)
 
     @OneToOne
     @JoinColumn(name = "coupon_id")
@@ -47,20 +47,28 @@ public class Order {
     private double discountedAmount; // 할인 후 최종 금액
 
     // 주문 상세 항목을 포함하는 내부 클래스
+
+    @Setter
     @Embeddable
+
     public static class OrderItemDetails {
+
+        private Long bookId;
         private String bookTitle; // 도서명
         private int quantity; // 수량
         private BigDecimal price; // 가격
 
-        public OrderItemDetails(String bookTitle, int quantity, BigDecimal price) {
+        public OrderItemDetails(Long bookId,String bookTitle, int quantity, BigDecimal price) {
+            this.bookId = bookId;
             this.bookTitle = bookTitle;
             this.quantity = quantity;
             this.price = price;
+
         }
 
         public OrderItemDetails() {
 
         }
+
     }
 }

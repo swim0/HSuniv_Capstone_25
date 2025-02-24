@@ -25,4 +25,5 @@ public class Comment {
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
+
 }

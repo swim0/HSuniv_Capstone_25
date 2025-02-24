@@ -12,16 +12,22 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    // 🔹 명시적 생성자 선언을 통한 의존성 주입
     public PaymentController(PaymentService paymentService) {
         this.paymentService = paymentService;
     }
 
     @PostMapping("/pay_process") //결제 처리 로직입니다.
     public ResponseEntity<Payment> processPayment(@RequestParam Long orderId,
-                                                  @RequestParam String method,
-                                                  @RequestParam String userId) {
+                                                  @RequestParam String method, // method는 결제 타입입니다. "카드","계좌이체" 이렇게 있습니다.
+                                                  @RequestParam Long userId) {
         Payment payment = paymentService.processPayment(orderId, method, userId);
+        return ResponseEntity.ok(payment);
+    }
+
+    @PostMapping("/refund_process")
+    public ResponseEntity<Payment> processRefund(@RequestParam Long orderId,
+                                                 @RequestParam Long userId) {
+        Payment payment = paymentService.refundPayment(orderId, userId);
         return ResponseEntity.ok(payment);
     }
 }

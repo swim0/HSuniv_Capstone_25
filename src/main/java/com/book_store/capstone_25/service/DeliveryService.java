@@ -23,7 +23,7 @@ public class DeliveryService {
         delivery.setOrder(order);
         delivery.setAddress(request.getAddress());
         delivery.setTrackingNumber(request.getTrackingNumber());
-        delivery.setDeliveryStatus("READY");
+        delivery.setDeliveryStatus("배송준비");
 
         return deliveryRepository.save(delivery);
     }

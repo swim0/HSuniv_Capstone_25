@@ -29,6 +29,9 @@ public class Book {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // 댓글 수를 저장하는 필드 추가
+    private int commentCount;
 }
 
 

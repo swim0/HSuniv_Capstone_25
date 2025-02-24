@@ -29,48 +29,52 @@ public class OrderService {
         double finalPrice = request.getTotalPrice();
 
         // 쿠폰 적용
-        double coupon;
         if (request.getCouponCode() != null && !request.getCouponCode().isEmpty()) {
-            coupon = couponService.applyCoupon(userId, request.getCouponCode(), request.getTotalPrice());
-            finalPrice = coupon;
+            finalPrice = couponService.applyCoupon(userId, request.getCouponCode(), request.getTotalPrice());
         }
 
-        // 주문 생성
+        // 주문 생성 (먼저 저장해야 함)
         Order order = new Order();
         order.setUser(user);
         order.setTotalAmount(request.getTotalPrice());
         order.setDiscountedAmount(finalPrice);
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING");
+        order.setStatus("결제 이전");
 
-        // 결제 정보 처리
+        order = orderRepository.save(order);  //  먼저 영속화하여 ID를 생성해야 함!
+
+        //  이후에 연관 엔티티를 저장해야 함! (Order 저장 후 Payment, Delivery 생성)
+
+        // 결제 정보 처리 (Order 저장 후 진행)
         Payment payment = new Payment();
         payment.setOrder(order);
-        payment.setPaid(false); // 예시로 'PENDING' 상태
-        payment = paymentRepository.save(payment);
+        payment.setPaid(false); // 결제 대기 상태
+        paymentRepository.save(payment);  // 🚀 여기서 Payment 저장 (Order가 DB에 저장된 후!)
+
         order.setPayment(payment);
 
         // 배송 정보 처리
         Delivery delivery = new Delivery();
         delivery.setOrder(order);
-        delivery.setDeliveryStatus("PENDING"); // 예시로 'PENDING' 상태
-        delivery = deliveryRepository.save(delivery);
+        delivery.setDeliveryStatus("배송 이전");
+        deliveryRepository.save(delivery);  // 🚀 여기서 Delivery 저장 (Order가 DB에 저장된 후!)
+
         order.setDelivery(delivery);
 
         // 주문 아이템 처리
         for (OrderRequest.OrderItemRequest itemRequest : request.getItems()) {
-            Book book = bookRepository.findById(itemRequest.getBookId())
+            Book book = bookRepository.findBookByBookId(itemRequest.getBookId())
                     .orElseThrow(() -> new RuntimeException("도서를 찾을 수 없습니다."));
 
             // 도서명, 수량, 가격 정보 추가
             Order.OrderItemDetails itemDetails = new Order.OrderItemDetails(
-                    book.getTitle(), itemRequest.getQuantity(), book.getPrice()
+                    book.getBookId(), book.getTitle(), itemRequest.getQuantity(), book.getPrice()
             );
 
             order.getOrderItems().add(itemDetails);
         }
 
-        // 최종 주문 저장
+        // 🔹 Order 최종 업데이트
         return orderRepository.save(order);
     }
 }

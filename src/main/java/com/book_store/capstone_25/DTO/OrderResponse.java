@@ -17,7 +17,7 @@ public class OrderResponse {
     private Long userId;
     private double totalPrice;
     private double discountApplied;
-    private List<OrderItemResponse> items;
+    private List<OrderItemRequest> items;
     private String status;
     private LocalDateTime orderDate;
 }
