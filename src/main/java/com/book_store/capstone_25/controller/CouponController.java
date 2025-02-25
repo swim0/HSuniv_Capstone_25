@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/coupons")
+@RequestMapping("/coupons") // 쿠폰 API 전체 경로
 public class CouponController {
     @Autowired
     private CouponService couponService;
