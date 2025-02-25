@@ -17,7 +17,7 @@ public class CouponController {
 
     // 쿠폰 발급 API (관리자가 발급)
     @PostMapping("/create")
-    public ResponseEntity<?> createCoupon(@RequestBody CouponRequest request) {
+    public ResponseEntity<?> createCoupon(@RequestBody CouponRequest request) { // DTO의 CouponRequest를 확인하시면 양식을 보실 수 있습니다.
         Coupon coupon = couponService.createCoupon(request);
         return ResponseEntity.ok(coupon);
     }

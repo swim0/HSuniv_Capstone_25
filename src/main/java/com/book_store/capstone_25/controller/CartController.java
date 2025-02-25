@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/cart")
+@RequestMapping("/cart") // 장바구니 관련 API 전체 경로
 public class CartController {
 
     private final ShoppingCartService cartService;

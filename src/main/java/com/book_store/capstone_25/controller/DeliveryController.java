@@ -8,7 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/delivery")
+@RequestMapping("/api/delivery") // 배송 조회 API 전체 경로
+// 배송 정보 조회입니다. 주석 처리한 코드들은 필요하신 경우 사용해주세요
 @RequiredArgsConstructor
 public class DeliveryController {
     private final DeliveryService deliveryService;

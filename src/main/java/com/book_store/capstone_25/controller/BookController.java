@@ -24,7 +24,7 @@ import java.util.UUID;
 
 // BookController.java
 @RestController
-@RequestMapping("/api/books")
+@RequestMapping("/api/books") // 도서관련 API 전체 경로
 @RequiredArgsConstructor
 public class BookController {
 

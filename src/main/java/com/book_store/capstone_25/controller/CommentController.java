@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/comments")
+@RequestMapping("/api/comments") // 댓글 API에 대한 전체경로
 @RequiredArgsConstructor
 public class CommentController {
 
