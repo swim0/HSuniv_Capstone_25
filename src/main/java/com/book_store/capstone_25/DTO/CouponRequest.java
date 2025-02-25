@@ -1,5 +1,6 @@
 package com.book_store.capstone_25.DTO;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,5 +19,6 @@ public class CouponRequest {
     private double discountAmount;
     private double discountPercent;
     private double minOrderAmount;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expiryDate;
 }

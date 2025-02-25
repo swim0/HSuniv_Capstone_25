@@ -46,6 +46,7 @@ public class Order {
     private double totalAmount; // 주문 총 금액
     private double discountedAmount; // 할인 후 최종 금액
 
+    private String address;
     // 주문 상세 항목을 포함하는 내부 클래스
 
     @Setter

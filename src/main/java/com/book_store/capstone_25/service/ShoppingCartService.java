@@ -88,7 +88,7 @@ public class ShoppingCartService {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING"); // 기본 주문 상태 설정
+        order.setStatus("결제 이전"); // 기본 주문 상태 설정
 
         // 주문 상세 항목 생성 및 총 금액 계산
         double totalAmount = 0;
@@ -100,6 +100,7 @@ public class ShoppingCartService {
             totalAmount += price.doubleValue() * quantity;
 
             Order.OrderItemDetails details = new Order.OrderItemDetails();
+            details.setBookId(cartItem.getBook().getBookId());
             details.setBookTitle(cartItem.getBook().getTitle());
             details.setQuantity(quantity);
             details.setPrice(price);

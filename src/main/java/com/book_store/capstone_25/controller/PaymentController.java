@@ -16,13 +16,15 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    @PostMapping("/pay_process") //결제 처리 로직입니다.
+    @PostMapping("/pay_process")
     public ResponseEntity<Payment> processPayment(@RequestParam Long orderId,
-                                                  @RequestParam String method, // method는 결제 타입입니다. "카드","계좌이체" 이렇게 있습니다.
-                                                  @RequestParam Long userId) {
-        Payment payment = paymentService.processPayment(orderId, method, userId);
+                                                  @RequestParam String method,
+                                                  @RequestParam Long userId,
+                                                  @RequestParam(required = false) String couponCode) {
+        Payment payment = paymentService.processPayment(orderId, method, userId, couponCode);
         return ResponseEntity.ok(payment);
     }
+
 
     @PostMapping("/refund_process")
     public ResponseEntity<Payment> processRefund(@RequestParam Long orderId,

@@ -29,9 +29,10 @@ public class Coupon {
     private double discountPercent; // 비율 할인 (예: 10%)
     private double minOrderAmount; // 최소 주문 금액 제한
     private boolean isUsed; // 사용 여부
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime expiryDate; // 만료 날짜
 
+    private LocalDateTime expiryDate; // 만료 날짜
+    @Column(name = "used_in_order_id")
+    private Long usedInOrderId;
     // 쿠폰이 사용 가능한 상태인지 확인
     public boolean isValid(double orderAmount) {
         return !isUsed && expiryDate.isAfter(LocalDateTime.now()) && orderAmount >= minOrderAmount;
