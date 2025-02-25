@@ -23,7 +23,7 @@ public class CartController {
     }
 
     // 장바구니에 책 추가
-    @PostMapping("/cart/add")
+    @PostMapping("/add")
     public ResponseEntity<ShoppingCartDTO> addToCart(
             @RequestParam Long userId,
             @RequestParam Long bookId,
