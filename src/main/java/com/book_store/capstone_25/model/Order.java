@@ -1,5 +1,7 @@
 package com.book_store.capstone_25.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,15 +26,18 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user; // 주문한 사용자
 
     @ElementCollection
     @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
     private List<OrderItemDetails> orderItems = new ArrayList<>(); // 주문 상세 목록
 
+    @JsonManagedReference
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment; // 결제 정보
 
+    @JsonManagedReference
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Delivery delivery; // 배송 정보
 

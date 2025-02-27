@@ -1,5 +1,8 @@
 package com.book_store.capstone_25.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,8 +22,10 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "order_id")
+    @JsonBackReference
     private Order order;
 
     private String paymentMethod; // 신용카드, 계좌이체 등

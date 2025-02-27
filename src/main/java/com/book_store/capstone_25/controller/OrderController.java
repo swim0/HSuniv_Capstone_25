@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/orders") // 주문 생성 API 전체 경로
 public class OrderController {
@@ -20,4 +22,11 @@ public class OrderController {
         Order order = orderService.placeOrder(userId, request); // Service 계층에서 orderService 로직 확인 가능
         return ResponseEntity.ok(order);
     }
+    // 주문 전체 확인
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Order>> getUserOrders(@PathVariable Long userId) {
+        List<Order> orders = orderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok(orders);
+    }
+
 }

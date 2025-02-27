@@ -1,5 +1,6 @@
 package com.book_store.capstone_25.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class Delivery {
 
     @OneToOne
     @JoinColumn(name = "order_id")
+    @JsonBackReference
     private Order order;
 
     private String address; // 배송 주소

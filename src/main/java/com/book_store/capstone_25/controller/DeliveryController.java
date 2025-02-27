@@ -1,11 +1,13 @@
 package com.book_store.capstone_25.controller;
 
-import com.book_store.capstone_25.DTO.DeliveryRequest;
 import com.book_store.capstone_25.model.Delivery;
+import com.book_store.capstone_25.model.Order;
 import com.book_store.capstone_25.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/delivery") // 배송 조회 API 전체 경로
@@ -21,6 +23,8 @@ public class DeliveryController {
     public ResponseEntity<Delivery> getDeliveryByOrderId(@PathVariable Long orderId) {
         return ResponseEntity.ok(deliveryService.getDeliveryByOrderId(orderId));
     }
+
+
 
     /**
      * 배송 정보 추가 (배송 준비 상태) -> 결제시 자동 배송 준비로 바뀜

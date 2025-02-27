@@ -7,6 +7,9 @@ import com.book_store.capstone_25.model.Delivery;
 import com.book_store.capstone_25.model.Order;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
@@ -41,9 +44,19 @@ public class DeliveryService {
                 .orElseThrow(() -> new RuntimeException("배송 정보를 찾을 수 없습니다."));
     }
 
-    /**
-     * 배송 상태 업데이트
-     */
+
+     public List<Order> getAllOrdersWithDelivery() {
+     List<Order> orders = orderRepository.findAll();
+
+     // 각 주문에 대한 배송 정보 추가
+     for (Order order : orders) {
+     deliveryRepository.findByOrder_Id(order.getId()).ifPresent(order::setDelivery);
+     }
+
+     return orders;
+     }
+
+
     public Delivery updateDeliveryStatus(Long orderId, String status) {
         Delivery delivery = deliveryRepository.findByOrder_Id(orderId)
                 .orElseThrow(() -> new RuntimeException("배송 정보를 찾을 수 없습니다."));

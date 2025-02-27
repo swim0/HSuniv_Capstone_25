@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -80,5 +81,10 @@ public class OrderService {
         order.setDelivery(delivery);
 
         return orderRepository.save(order);
+    }
+
+
+    public List<Order> getOrdersByUserId(Long userId) {
+        return orderRepository.findOrderByUserId(userId);
     }
 }
