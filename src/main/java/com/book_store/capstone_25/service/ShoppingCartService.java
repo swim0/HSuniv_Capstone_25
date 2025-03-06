@@ -2,10 +2,7 @@ package com.book_store.capstone_25.service;
 
 import com.book_store.capstone_25.DTO.CartItemDTO;
 import com.book_store.capstone_25.DTO.ShoppingCartDTO;
-import com.book_store.capstone_25.Repository.BookRepository;
-import com.book_store.capstone_25.Repository.CartItemRepository;
-import com.book_store.capstone_25.Repository.OrderRepository;
-import com.book_store.capstone_25.Repository.ShoppingCartRepository;
+import com.book_store.capstone_25.Repository.*;
 import com.book_store.capstone_25.model.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -24,14 +21,15 @@ public class ShoppingCartService {
     private final CartItemRepository cartItemRepository;
     private final BookRepository bookRepository;
     private final OrderRepository orderRepository;
-
+    private final OrderItemDetailsRepository orderItemDetailsRepository;
     public ShoppingCartService(ShoppingCartRepository cartRepository,
                                CartItemRepository cartItemRepository,
-                               BookRepository bookRepository, OrderRepository orderRepository) {
+                               BookRepository bookRepository, OrderRepository orderRepository, OrderItemDetailsRepository orderItemDetailsRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.bookRepository = bookRepository;
         this.orderRepository = orderRepository;
+        this.orderItemDetailsRepository = orderItemDetailsRepository;
     }
 
     public Cart getCartByUser(User user) {
@@ -113,31 +111,40 @@ public class ShoppingCartService {
         order.setStatus("결제 이전");
 
         double totalAmount = 0;
-        List<Order.OrderItemDetails> orderItemDetailsList = new ArrayList<>();
+        List<OrderItemDetails> orderItemDetailsList = new ArrayList<>();
 
         for (CartItem cartItem : cart.getItems()) {
             BigDecimal price = cartItem.getBook().getPrice();
             int quantity = cartItem.getQuantity();
             totalAmount += price.doubleValue() * quantity;
 
-            Order.OrderItemDetails details = new Order.OrderItemDetails();
+            OrderItemDetails details = new OrderItemDetails();
+            details.setOrder(order); // ✅ 주문과 연결
             details.setBookId(cartItem.getBook().getBookId());
             details.setBookTitle(cartItem.getBook().getTitle());
             details.setQuantity(quantity);
             details.setPrice(price);
             orderItemDetailsList.add(details);
         }
-        order.setOrderItems(orderItemDetailsList);
+
         order.setTotalAmount(totalAmount);
         order.setDiscountedAmount(totalAmount);
 
-        orderRepository.save(order);
+        // ✅ 주문 먼저 저장 (ID 필요)
+        order = orderRepository.save(order);
+
+        // ✅ 주문 아이템 저장 (각각 order와 연결됨)
+        for (OrderItemDetails details : orderItemDetailsList) {
+            details.setOrder(order); // 다시 연결
+            orderItemDetailsRepository.save(details);
+        }
 
         cart.getItems().clear();
         cartRepository.save(cart);
 
         return order;
     }
+
 
     public ShoppingCartDTO convertToDTO(Cart cart) {
         List<CartItemDTO> itemDTOs = cart.getItems().stream().map(cartItem -> {
