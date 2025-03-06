@@ -1,9 +1,12 @@
 package com.book_store.capstone_25.controller;
 
 import com.book_store.capstone_25.Repository.InterestRepository;
+import com.book_store.capstone_25.Repository.OrderRepository;
 import com.book_store.capstone_25.Repository.UserRepository;
+import com.book_store.capstone_25.Repository.UserSuchRepository;
 import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.model.User_Interest;
+import com.book_store.capstone_25.model.User_Such;
 import com.book_store.capstone_25.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.Setter;
@@ -23,11 +26,17 @@ public class MyPageController {
     private final UserRepository userRepository;
     private final InterestRepository interestRepository;
     private final UserService userService;
+    private final OrderRepository orderRepository;
+    private final UserSuchRepository suchRepository;
+    private final UserSuchRepository userSuchRepository;
 
-    public MyPageController( UserRepository userRepository, InterestRepository interestRepository, UserService userService){
+    public MyPageController(UserRepository userRepository, InterestRepository interestRepository, UserService userService, OrderRepository orderRepository, UserSuchRepository suchRepository, UserSuchRepository userSuchRepository){
         this.userRepository = userRepository;
         this.interestRepository = interestRepository;
         this.userService = userService;
+        this.orderRepository = orderRepository;
+        this.suchRepository = suchRepository;
+        this.userSuchRepository = userSuchRepository;
     }
 
     @PutMapping("MyPage/{userId}")
@@ -59,8 +68,8 @@ public class MyPageController {
     }
 
 
-    @Transactional
     @DeleteMapping("/MyPage/{userId}")
+    @Transactional  // 트랜잭션 적용
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId, @RequestParam String password) {
         Optional<User> user = userRepository.findUserByUserIdAndPassword(userId, password);
         if (user.isEmpty()) {
@@ -71,13 +80,21 @@ public class MyPageController {
 
         User currentUser = user.get();
 
-        // User와 연관된 UserOrder와 UserInterest를 삭제
-
+        // ✅ 1. UserInterest 먼저 삭제
         interestRepository.deleteAll(currentUser.getUserInterests());
+
+        // ✅ 2. UserSuch 삭제 (연관된 User 정보 제거)
+        userSuchRepository.deleteByUser(currentUser);
+
+        // ✅ 3. UserOrder 삭제 (만약 존재한다면)
+        orderRepository.deleteByUser(currentUser); // 필요한 경우 추가
+
+        // ✅ 4. User 삭제
         userRepository.delete(currentUser);
 
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 완료되었습니다."));
     }
+
 
 
 
