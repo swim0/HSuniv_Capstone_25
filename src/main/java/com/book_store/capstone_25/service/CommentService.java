@@ -22,12 +22,12 @@ public class CommentService {
     private final UserRepository userRepository;
 
     // ✅ 특정 회원의 댓글 조회
-    public List<Comment> getCommentsByUser(User user) {
+    public List<Comment> getCommentsByUser(Long user) {
         return commentRepository.findUserByUser(user);
     }
 
     // ✅ 특정 책의 전체 댓글 조회 (추가)
-    public List<Comment> getCommentsByBook(Book bookId) {
+    public List<Comment> getCommentsByBook(Long bookId) {
         return commentRepository.findByBook(bookId);
     }
 

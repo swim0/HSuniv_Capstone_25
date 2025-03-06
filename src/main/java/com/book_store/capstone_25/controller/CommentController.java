@@ -19,14 +19,14 @@ public class CommentController {
 
     // ✅ 특정 책의 전체 댓글 조회
     @GetMapping("/book/{bookId}")
-    public ResponseEntity<List<Comment>> getCommentsByBook(@PathVariable Book bookId) {
+    public ResponseEntity<List<Comment>> getCommentsByBook(@PathVariable Long bookId) {
         List<Comment> comments = commentService.getCommentsByBook(bookId);
         return ResponseEntity.ok(comments);
     }
 
     // ✅ 특정 회원의 댓글 조회
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Comment>> getCommentsByUser(@PathVariable User userId) {
+    public ResponseEntity<List<Comment>> getCommentsByUser(@PathVariable Long userId) {
         List<Comment> comments = commentService.getCommentsByUser(userId);
         return ResponseEntity.ok(comments);
     }
