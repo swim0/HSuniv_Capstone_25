@@ -1,67 +1,48 @@
 package com.book_store.capstone_25.controller;
 
-import com.book_store.capstone_25.DTO.ShoppingCartDTO;
-import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.Cart;
-import com.book_store.capstone_25.model.Order;
 import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.service.ShoppingCartService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/cart") // 장바구니 관련 API 전체 경로
+@RequiredArgsConstructor
+@RequestMapping("/api/cart")
 public class CartController {
 
-    private final ShoppingCartService cartService;
-    private final UserRepository  userRepository;
+    private final ShoppingCartService shoppingCartService;
 
-
-    public CartController(ShoppingCartService cartService, UserRepository userRepository) {
-        this.cartService = cartService;
-        this.userRepository = userRepository;
-    }
-
-    // 장바구니에 책 추가
+    // ✅ 장바구니 도서 추가
     @PostMapping("/add")
-    public ResponseEntity<ShoppingCartDTO> addToCart(
-            @RequestParam Long userId,
-            @RequestParam Long bookId,
-            @RequestParam int quantity) {
-        User user = userRepository.findUsersById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Cart cart = cartService.addToCart(user, bookId, quantity);
-        ShoppingCartDTO dto = cartService.convertToDTO(cart);
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<Cart> addToCart(@RequestParam Long userId, @RequestParam Long bookId, @RequestParam int quantity) {
+        User user = new User();
+        user.setId(userId);
+        return ResponseEntity.ok(shoppingCartService.addToCart(user, bookId, quantity));
     }
 
-
-    // 장바구니에서 책 제거
-    @DeleteMapping("/remove")
-    public ResponseEntity<Cart> removeFromCart(@RequestParam Long userId,@RequestParam Long bookId) {
-        User user = userRepository.findUsersById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Cart cart = cartService.removeFromCart(user, bookId);
-        return ResponseEntity.ok(cart);
+    // ✅ 장바구니 개별 항목 삭제
+    @DeleteMapping("/remove/{bookId}")
+    public ResponseEntity<Cart> removeCartItem(@RequestParam Long userId, @PathVariable Long bookId) {
+        User user = new User();
+        user.setId(userId);
+        return ResponseEntity.ok(shoppingCartService.removeCartItem(user, bookId));
     }
 
-    // 장바구니 조회: 엔티티 대신 DTO 반환
-    @GetMapping("/cart_read")
-    public ResponseEntity<ShoppingCartDTO> viewCart(@RequestParam Long userId) {
-        User user = userRepository.findUsersById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Cart cart = cartService.getCartByUser(user);
-        ShoppingCartDTO cartDTO = cartService.convertToDTO(cart);
-        return ResponseEntity.ok(cartDTO);
+    // ✅ 장바구니 전체 비우기
+    @DeleteMapping("/clear")
+    public ResponseEntity<Cart> clearCart(@RequestParam Long userId) {
+        User user = new User();
+        user.setId(userId);
+        return ResponseEntity.ok(shoppingCartService.clearCart(user));
     }
 
-    // 장바구니에 담긴 모든 책 구매 (결제)
-    @PostMapping("/checkout")
-    public ResponseEntity<Order> checkout(@RequestParam Long userId) {
-        User user = userRepository.findUsersById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Order order = cartService.checkout(user);
-        return ResponseEntity.ok(order);
+    // ✅ 장바구니 수량 변경
+    @PutMapping("/update/{bookId}")
+    public ResponseEntity<Cart> updateCartItemQuantity(@RequestParam Long userId, @PathVariable Long bookId, @RequestParam int quantity) {
+        User user = new User();
+        user.setId(userId);
+        return ResponseEntity.ok(shoppingCartService.updateCartItemQuantity(user, bookId, quantity));
     }
 }
-

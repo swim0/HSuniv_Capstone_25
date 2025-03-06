@@ -17,17 +17,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
 @Service
 public class ShoppingCartService {
 
-    // 필요한 Repository (ShoppingCartRepository, CartItemRepository, BookRepository 등)
     private final ShoppingCartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final BookRepository bookRepository;
     private final OrderRepository orderRepository;
 
-    // 생성자 주입
     public ShoppingCartService(ShoppingCartRepository cartRepository,
                                CartItemRepository cartItemRepository,
                                BookRepository bookRepository, OrderRepository orderRepository) {
@@ -38,31 +35,28 @@ public class ShoppingCartService {
     }
 
     public Cart getCartByUser(User user) {
-        Cart cart = cartRepository.findByUser(user);
-        if (cart == null) {
-            cart = new Cart();
-            cart.setUser(user);
-            cartRepository.save(cart);
-        }
-        return cart;
+        return cartRepository.findByUser(user)
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUser(user);
+                    return cartRepository.save(newCart);
+                });
     }
 
+    // ✅ 장바구니에 도서 추가 (수량 조정)
     public Cart addToCart(User user, Long bookId, int quantity) {
         Cart cart = getCartByUser(user);
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        // 기존에 장바구니에 같은 책이 있는지 확인
         Optional<CartItem> optionalItem = cart.getItems().stream()
                 .filter(item -> item.getBook().getBookId().equals(bookId))
                 .findFirst();
 
         if (optionalItem.isPresent()) {
-            // 수량 업데이트
             CartItem item = optionalItem.get();
             item.setQuantity(item.getQuantity() + quantity);
         } else {
-            // 새 항목 추가
             CartItem newItem = new CartItem();
             newItem.setBook(book);
             newItem.setQuantity(quantity);
@@ -72,10 +66,38 @@ public class ShoppingCartService {
         return cartRepository.save(cart);
     }
 
-    public Cart removeFromCart(User user, Long bookId) {
+    // ✅ 장바구니에서 특정 도서 삭제
+    public Cart removeCartItem(User user, Long bookId) {
         Cart cart = getCartByUser(user);
         cart.getItems().removeIf(item -> item.getBook().getBookId().equals(bookId));
         return cartRepository.save(cart);
+    }
+
+    // ✅ 장바구니 비우기 (전체 삭제)
+    public Cart clearCart(User user) {
+        Cart cart = getCartByUser(user);
+        cart.getItems().clear();
+        return cartRepository.save(cart);
+    }
+
+    // ✅ 장바구니에서 특정 도서 수량 변경 (업데이트)
+    public Cart updateCartItemQuantity(User user, Long bookId, int quantity) {
+        Cart cart = getCartByUser(user);
+        Optional<CartItem> optionalItem = cart.getItems().stream()
+                .filter(item -> item.getBook().getBookId().equals(bookId))
+                .findFirst();
+
+        if (optionalItem.isPresent()) {
+            CartItem item = optionalItem.get();
+            if (quantity <= 0) {
+                cart.getItems().remove(item); // 수량이 0 이하일 경우 삭제
+            } else {
+                item.setQuantity(quantity);
+            }
+            return cartRepository.save(cart);
+        } else {
+            throw new RuntimeException("CartItem not found");
+        }
     }
 
     @Transactional
@@ -88,9 +110,8 @@ public class ShoppingCartService {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("결제 이전"); // 기본 주문 상태 설정
+        order.setStatus("결제 이전");
 
-        // 주문 상세 항목 생성 및 총 금액 계산
         double totalAmount = 0;
         List<Order.OrderItemDetails> orderItemDetailsList = new ArrayList<>();
 
@@ -108,14 +129,10 @@ public class ShoppingCartService {
         }
         order.setOrderItems(orderItemDetailsList);
         order.setTotalAmount(totalAmount);
-        order.setDiscountedAmount(totalAmount); // 할인 로직이 있다면 적용
+        order.setDiscountedAmount(totalAmount);
 
-        // Payment, Delivery, Coupon 등은 필요에 따라 설정 또는 나중에 처리
-
-        // Order 저장 (OrderRepository 필요)
         orderRepository.save(order);
 
-        // 장바구니 비우기
         cart.getItems().clear();
         cartRepository.save(cart);
 
