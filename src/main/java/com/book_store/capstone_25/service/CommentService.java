@@ -6,6 +6,7 @@ import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.Comment;
 import com.book_store.capstone_25.model.Book;
 import com.book_store.capstone_25.model.User;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +24,16 @@ public class CommentService {
 
     // ✅ 특정 회원의 댓글 조회
     public List<Comment> getCommentsByUser(Long userId) {
-        return commentRepository.findCommentsByUser_id(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+        return commentRepository.findByUser(user);
     }
 
     // ✅ 특정 책의 전체 댓글 조회 (추가)
     public List<Comment> getCommentsByBook(Long bookId) {
-        return commentRepository.findByBook(bookId);
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException("책을 찾을 수 없습니다: " + bookId));
+        return commentRepository.findByBook(book);
     }
 
     // ✅ 댓글 추가
