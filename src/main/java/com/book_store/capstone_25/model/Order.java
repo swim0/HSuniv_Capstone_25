@@ -2,6 +2,7 @@ package com.book_store.capstone_25.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -54,15 +55,19 @@ public class Order {
     private String address;
     // 주문 상세 항목을 포함하는 내부 클래스
 
+
+    @Getter
     @Setter
     @Embeddable
-
     public static class OrderItemDetails {
-
+        @JsonProperty("bookId")
         private Long bookId;
-        private String bookTitle; // 도서명
-        private int quantity; // 수량
-        private BigDecimal price; // 가격
+        @JsonProperty("bookTitle")
+        private String bookTitle;
+        @JsonProperty("quantity")
+        private int quantity;
+        @JsonProperty("price")
+        private BigDecimal price;
 
         public OrderItemDetails(Long bookId,String bookTitle, int quantity, BigDecimal price) {
             this.bookId = bookId;

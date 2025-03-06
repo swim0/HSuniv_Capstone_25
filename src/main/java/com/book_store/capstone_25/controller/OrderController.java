@@ -19,16 +19,15 @@ public class OrderController {
 
     @PostMapping("/create")
     public ResponseEntity<?> placeOrder(@RequestParam Long userId, @RequestBody OrderRequest request) {
+        System.out.println("Received OrderRequest: " + request);
+        System.out.println("Order Items: " + request.getItems());
+
         if (request.getItems() == null || request.getItems().isEmpty()) {
             return ResponseEntity.badRequest().body("주문 아이템이 비어 있습니다.");
         }
 
-        try {
-            Order order = orderService.placeOrder(userId, request);
-            return ResponseEntity.ok(order);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("주문 생성 중 오류 발생: " + e.getMessage());
-        }
+        Order order = orderService.placeOrder(userId, request);
+        return ResponseEntity.ok(order);
     }
     // 주문 전체 확인
     @GetMapping("/user/{userId}")
