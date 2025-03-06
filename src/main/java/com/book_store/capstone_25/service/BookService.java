@@ -6,21 +6,17 @@ import com.book_store.capstone_25.Repository.UserRepository;
 import com.book_store.capstone_25.model.Book;
 import com.book_store.capstone_25.model.SearchHistory;
 import com.book_store.capstone_25.model.User;
-import jakarta.annotation.Resource;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookService {
-    public final BookRepository bookRepository;
-    public final UserRepository userRepository;
-    public final SearchHistoryRepository searchHistoryRepository;
+    private final BookRepository bookRepository;
+    private final UserRepository userRepository;
+    private final SearchHistoryRepository searchHistoryRepository;
 
     public BookService(BookRepository bookRepository, UserRepository userRepository, SearchHistoryRepository searchHistoryRepository) {
         this.bookRepository = bookRepository;
@@ -28,6 +24,7 @@ public class BookService {
         this.searchHistoryRepository = searchHistoryRepository;
     }
 
+    // ✅ 도서 등록 (이미지 포함)
     public Book createBookFromResource(String title, String author, String publisher,
                                        String genre, BigDecimal price, String resourcePath) {
         Book book = new Book();
@@ -43,17 +40,25 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-
     public List<Book> searchBooks(Long userId, String title, String author, String publisher, String genre) {
-        // 🔹 userId가 null이 아닐 때만 사용자 조회 및 검색 기록 저장
         if (userId != null) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-            SearchHistory searchHistory = new SearchHistory(user, title, author, publisher, genre);
+
+            // 🔹 기존 생성자 방식 대신 빌더 패턴 사용
+            SearchHistory searchHistory = SearchHistory.builder()
+                    .user(user)
+                    .keyword(title != null ? title : "")  // 🔹 title을 keyword로 저장 (기본값: 빈 문자열)
+                    .title(title)
+                    .author(author)
+                    .publisher(publisher)
+                    .genre(genre)
+                    .build();
+
             searchHistoryRepository.save(searchHistory);
         }
 
-        // 🔹 도서 검색 로직 (변경 없음)
+        // 🔹 도서 검색 로직
         if (title != null && !title.isEmpty()) {
             return bookRepository.findBookByTitleContainingIgnoreCase(title);
         } else if (author != null && !author.isEmpty()) {
@@ -63,8 +68,20 @@ public class BookService {
         } else if (genre != null && !genre.isEmpty()) {
             return bookRepository.findBookByGenreContainingIgnoreCase(genre);
         }
+
         return bookRepository.findAll();
     }
 
 
+    // ✅ 검색 기록 전체 삭제 (사용자별)
+    @Transactional
+    public void deleteAllSearchHistory(Long userId) {
+        searchHistoryRepository.deleteByUserId(userId);
+    }
+
+    // ✅ 특정 키워드 검색 기록 삭제 (사용자별)
+    @Transactional
+    public void deleteSearchHistoryByKeyword(Long userId, String keyword) {
+        searchHistoryRepository.deleteByUserIdAndKeyword(userId, keyword);
+    }
 }

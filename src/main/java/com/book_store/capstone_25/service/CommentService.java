@@ -8,41 +8,44 @@ import com.book_store.capstone_25.model.Book;
 import com.book_store.capstone_25.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
+
     private final CommentRepository commentRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
 
-    public CommentService(CommentRepository commentRepository, BookRepository bookRepository, UserRepository userRepository) {
-        this.commentRepository = commentRepository;
-        this.bookRepository = bookRepository;
-        this.userRepository = userRepository;
-    }
-
-
-    // 특정 회원의 댓글 조회
+    // ✅ 특정 회원의 댓글 조회
     public List<Comment> getCommentsByUser(User user) {
-        // CommentRepository에서 user에 해당하는 댓글 목록을 조회
-        return commentRepository.findUserByUser((user));
+        return commentRepository.findUserByUser(user);
     }
 
+    // ✅ 특정 책의 전체 댓글 조회 (추가)
+    public List<Comment> getCommentsByBook(Book bookId) {
+        return commentRepository.findByBook(bookId);
+    }
+
+    // ✅ 댓글 추가
+    @Transactional
     public Comment addComment(Long bookId, Long userId, String content) {
-        // Book과 User 객체는 미리 조회한다고 가정
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
         User user = userRepository.findUsersById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Comment comment = new Comment();
-        comment.setBook(book);
-        comment.setUser(user);
-        comment.setContent(content);
-        comment.setCreatedAt(LocalDateTime.now());
+
+        Comment comment = Comment.builder()
+                .book(book)
+                .user(user)
+                .content(content)
+                .createdAt(LocalDateTime.now())
+                .build();
+
         Comment savedComment = commentRepository.save(comment);
 
         // 댓글 추가 후, Book의 commentCount 증가
@@ -52,21 +55,40 @@ public class CommentService {
         return savedComment;
     }
 
-    public Optional<Comment> getCommentById(Long id) {
-        return commentRepository.findById(id);
+    // ✅ 댓글 ID로 조회
+    public Comment getCommentById(Long id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
     }
 
-    public Comment updateComment(Comment comment, String newContent) {
+    // ✅ 댓글 수정
+    @Transactional
+    public Comment updateComment(Long commentId, Long userId, String newContent) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        // 작성자 본인만 수정 가능
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new RuntimeException("댓글을 수정할 권한이 없습니다.");
+        }
+
         comment.setContent(newContent);
         comment.setUpdatedAt(LocalDateTime.now());
         return commentRepository.save(comment);
     }
 
-    public void deleteComment(Long commentId) {
+    // ✅ 댓글 삭제 (작성자 본인만 가능)
+    @Transactional
+    public void deleteComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
-        Book book = comment.getBook();
 
+        // 작성자 본인만 삭제 가능
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new RuntimeException("댓글을 삭제할 권한이 없습니다.");
+        }
+
+        Book book = comment.getBook();
         commentRepository.delete(comment);
 
         // 댓글 삭제 후, Book의 commentCount 감소

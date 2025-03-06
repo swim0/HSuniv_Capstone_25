@@ -1,7 +1,7 @@
 package com.book_store.capstone_25.Repository;
 
-import com.book_store.capstone_25.model.Comment;
 import com.book_store.capstone_25.model.Book;
+import com.book_store.capstone_25.model.Comment;
 import com.book_store.capstone_25.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
