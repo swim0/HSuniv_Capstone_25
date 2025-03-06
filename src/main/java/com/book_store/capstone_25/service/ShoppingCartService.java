@@ -21,15 +21,14 @@ public class ShoppingCartService {
     private final CartItemRepository cartItemRepository;
     private final BookRepository bookRepository;
     private final OrderRepository orderRepository;
-    private final OrderItemDetailsRepository orderItemDetailsRepository;
     public ShoppingCartService(ShoppingCartRepository cartRepository,
                                CartItemRepository cartItemRepository,
-                               BookRepository bookRepository, OrderRepository orderRepository, OrderItemDetailsRepository orderItemDetailsRepository) {
+                               BookRepository bookRepository, OrderRepository orderRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.bookRepository = bookRepository;
         this.orderRepository = orderRepository;
-        this.orderItemDetailsRepository = orderItemDetailsRepository;
+
     }
 
     public Cart getCartByUser(User user) {
@@ -98,7 +97,6 @@ public class ShoppingCartService {
         }
     }
 
-    @Transactional
     public Order checkout(User user) {
         Cart cart = getCartByUser(user);
         if (cart.getItems().isEmpty()) {
@@ -111,33 +109,25 @@ public class ShoppingCartService {
         order.setStatus("결제 이전");
 
         double totalAmount = 0;
-        List<OrderItemDetails> orderItemDetailsList = new ArrayList<>();
+        List<Order.OrderItemDetails> orderItemDetailsList = new ArrayList<>();
 
         for (CartItem cartItem : cart.getItems()) {
             BigDecimal price = cartItem.getBook().getPrice();
             int quantity = cartItem.getQuantity();
             totalAmount += price.doubleValue() * quantity;
 
-            OrderItemDetails details = new OrderItemDetails();
-            details.setOrder(order); // ✅ 주문과 연결
+            Order.OrderItemDetails details = new Order.OrderItemDetails();
             details.setBookId(cartItem.getBook().getBookId());
             details.setBookTitle(cartItem.getBook().getTitle());
             details.setQuantity(quantity);
             details.setPrice(price);
             orderItemDetailsList.add(details);
         }
-
+        order.setOrderItems(orderItemDetailsList);
         order.setTotalAmount(totalAmount);
         order.setDiscountedAmount(totalAmount);
 
-        // ✅ 주문 먼저 저장 (ID 필요)
-        order = orderRepository.save(order);
-
-        // ✅ 주문 아이템 저장 (각각 order와 연결됨)
-        for (OrderItemDetails details : orderItemDetailsList) {
-            details.setOrder(order); // 다시 연결
-            orderItemDetailsRepository.save(details);
-        }
+        orderRepository.save(order);
 
         cart.getItems().clear();
         cartRepository.save(cart);

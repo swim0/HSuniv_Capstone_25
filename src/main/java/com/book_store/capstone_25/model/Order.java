@@ -2,7 +2,6 @@ package com.book_store.capstone_25.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +29,8 @@ public class Order {
     @JsonBackReference
     private User user; // 주문한 사용자
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ElementCollection
+    @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
     private List<OrderItemDetails> orderItems = new ArrayList<>(); // 주문 상세 목록
 
     @JsonManagedReference
@@ -54,4 +54,27 @@ public class Order {
     private String address;
     // 주문 상세 항목을 포함하는 내부 클래스
 
+    @Setter
+    @Embeddable
+
+    public static class OrderItemDetails {
+
+        private Long bookId;
+        private String bookTitle; // 도서명
+        private int quantity; // 수량
+        private BigDecimal price; // 가격
+
+        public OrderItemDetails(Long bookId,String bookTitle, int quantity, BigDecimal price) {
+            this.bookId = bookId;
+            this.bookTitle = bookTitle;
+            this.quantity = quantity;
+            this.price = price;
+
+        }
+
+
+        public OrderItemDetails() {
+
+        }
+    }
 }
