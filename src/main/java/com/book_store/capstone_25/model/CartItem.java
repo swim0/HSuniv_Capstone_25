@@ -1,5 +1,6 @@
 package com.book_store.capstone_25.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,8 @@ public class CartItem {
 
     // 어떤 장바구니에 속하는지
     @ManyToOne
+    @JoinColumn(name = "cart_id")
+    @JsonBackReference
     private Cart cart;
 
     // 어떤 책인지

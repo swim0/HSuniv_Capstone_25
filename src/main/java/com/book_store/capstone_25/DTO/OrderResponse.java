@@ -20,5 +20,6 @@ public class OrderResponse {
     private List<OrderItemRequest> items;
     private String status;
     private LocalDateTime orderDate;
+    private Long couponId;
 }
 
