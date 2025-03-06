@@ -45,4 +45,11 @@ public class CartController {
         user.setId(userId);
         return ResponseEntity.ok(shoppingCartService.updateCartItemQuantity(user, bookId, quantity));
     }
+    // ✅ 장바구니 조회
+    @GetMapping("/{userId}")
+    public ResponseEntity<Cart> getCart(@PathVariable Long userId) {
+        User user = new User();
+        user.setId(userId);
+        return ResponseEntity.ok(shoppingCartService.getCartByUser(user));
+    }
 }
