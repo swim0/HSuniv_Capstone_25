@@ -22,8 +22,8 @@ public class CommentService {
     private final UserRepository userRepository;
 
     // ✅ 특정 회원의 댓글 조회
-    public List<Comment> getCommentsByUser(Long user) {
-        return commentRepository.findUserByUser(user);
+    public List<Comment> getCommentsByUser(Long userId) {
+        return commentRepository.findCommentsByUser_id(userId);
     }
 
     // ✅ 특정 책의 전체 댓글 조회 (추가)
