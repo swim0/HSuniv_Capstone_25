@@ -1,38 +1,61 @@
 package com.book_store.capstone_25.controller;
 
+import com.book_store.capstone_25.DTO.PaymentRequest;
 import com.book_store.capstone_25.model.Payment;
 import com.book_store.capstone_25.service.PaymentService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/payments") // 결제 처리에 대한 API입니다. 카드,계좌이체 가 있으며
-                                // User Table에 bank_account가 추가되었습니다. 마찬가지로 마이페이지 에서 변경 가능합니다.
+@RequestMapping("/payments")
 public class PaymentController {
 
     private final PaymentService paymentService;
-
     public PaymentController(PaymentService paymentService) {
         this.paymentService = paymentService;
     }
 
-    @PostMapping("/pay_process")
-    public ResponseEntity<Payment> processPayment(@RequestParam Long orderId,
-                                                  @RequestParam String method, // methode는 "카드","계좌이체" 택1 입니다.
-                                                  @RequestParam Long userId,
-                                                  @RequestParam(required = false) String couponCode) { // 쿠폰이 있을 경우에만 입력하면 됩니다.(선택적)
-        Payment payment = paymentService.processPayment(orderId, method, userId, couponCode);  // 로직이 필요하신 경우 Service계층에서 paymentService 확인
-        return ResponseEntity.ok(payment);
+    /** ------------------------------------------------------------------
+     *  ①  application/x-www-form-urlencoded  또는  query‑string  전용
+     * ------------------------------------------------------------------ */
+    @PostMapping(
+            value = "/pay_process",
+            consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.ALL_VALUE }
+    )
+    public ResponseEntity<?> payProcessForm(@ModelAttribute PaymentRequest req) {
+        return wrap(() -> paymentService.processPayment(
+                req.getOrderId(), req.getMethod(), req.getUserId(), req.getCouponCode()));
     }
 
+    /** ------------------------------------------------------------------
+     *  ②  application/json  전용  (프론트가 나중에 JSON 전송으로 바꿔도 OK)
+     * ------------------------------------------------------------------ */
+    @PostMapping(
+            value = "/pay_process",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> payProcessJson(@RequestBody PaymentRequest req) {
+        return wrap(() -> paymentService.processPayment(
+                req.getOrderId(), req.getMethod(), req.getUserId(), req.getCouponCode()));
+    }
 
-    // 환불 API 입니다
+    // ---------------- 환불 ----------------
     @PostMapping("/refund_process")
-    public ResponseEntity<Payment> processRefund(@RequestParam Long orderId,
-                                                 @RequestParam Long userId) {
-        Payment payment = paymentService.refundPayment(orderId, userId); // 로직이 필요하신 경우 Service계층에서 paymentService 확인
-        return ResponseEntity.ok(payment);
+    public ResponseEntity<?> refund(@RequestParam Long orderId,
+                                    @RequestParam Long userId) {
+        return wrap(() -> paymentService.refundPayment(orderId, userId));
+    }
+
+    /*===== 공통 응답 래퍼 =====*/
+    private ResponseEntity<?> wrap(java.util.concurrent.Callable<Payment> call) {
+        try {
+            Payment p = call.call();
+            return ResponseEntity.ok(p);
+        } catch (Exception e) {
+            System.err.println("❌ 결제/환불 실패: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
-
-
