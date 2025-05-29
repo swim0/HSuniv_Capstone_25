@@ -36,7 +36,7 @@ public class PaymentService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
 
-        // 중복 결제 방지 (이미 결제된 주문인지 확인)
+        // 중복 결제 방지
         if (order.getStatus().equals("결제 완료")) {
             throw new RuntimeException("이미 결제된 주문입니다.");
         }
@@ -58,37 +58,27 @@ public class PaymentService {
             throw new RuntimeException("지원하지 않는 결제 방식입니다.");
         }
 
-        // 최종 결제 금액 계산 (쿠폰 적용 등)
-        double finalAmount = order.getTotalAmount(); // 기본 금액
+        // 금액 계산
+        double finalAmount = order.getTotalAmount();
         if (couponCode != null && !couponCode.isEmpty()) {
             finalAmount = couponService.applyCoupon(userId, couponCode, finalAmount);
         }
 
-        // Payment 레코드가 이미 존재하는지 확인
-        Optional<Payment> existingPaymentOpt = paymentRepository.findByOrder(order);
-        Payment payment;
-        if (existingPaymentOpt.isPresent()) {
-            // 이미 생성된 Payment가 있다면 업데이트
-            payment = existingPaymentOpt.get();
-            // 결제 상태 업데이트
-            payment.setPaid(true);
-            payment.setPaymentMethod(method);
-            payment.setPaymentDate(LocalDateTime.now());
-        } else {
-            // 없으면 새 Payment 생성
-            payment = new Payment();
-            payment.setOrder(order);
-            payment.setPaymentMethod(method);
-            payment.setPaid(true);
-            payment.setPaymentDate(LocalDateTime.now());
-        }
+        // 기존 결제 내역 확인
+        Optional<Payment> optionalPayment = paymentRepository.findByOrder_Id(orderId);
+        Payment payment = optionalPayment.orElse(new Payment());
+
+        payment.setOrder(order);
+        payment.setPaymentMethod(method);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setPaid(true);
 
         // 주문 상태 업데이트
         order.setStatus("결제 완료");
         order.setDiscountedAmount(finalAmount);
         orderRepository.save(order);
 
-        // 쿠폰 적용 (결제 완료 후 쿠폰 사용 처리)
+        // 쿠폰 적용 처리
         if (couponCode != null && !couponCode.isEmpty()) {
             couponService.applyCouponToOrder(orderId, couponCode);
         }
@@ -107,38 +97,24 @@ public class PaymentService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
 
-        // 🛑 이미 환불된 주문인지 확인
-        if (order.getStatus().equals("환불 완료")) {
-            throw new RuntimeException("이미 환불된 주문입니다.");
-        }
-
-        // 🛑 쿠폰이 적용된 경우 환불 불가
-        if (order.getCoupon() != null) {
-            throw new RuntimeException("쿠폰이 적용된 주문은 환불이 불가능합니다.");
-        }
-
-        // 사용자 조회 (추가 검증용)
+        // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 해당 주문의 결제 정보 조회 (결제와 주문은 1:1 관계)
+        // 결제 정보 조회
         Payment payment = paymentRepository.findByOrder_Id(orderId)
                 .orElseThrow(() -> new RuntimeException("결제 정보를 찾을 수 없습니다."));
 
-        // 🛑 결제되지 않은 주문을 환불 요청한 경우 예외 발생
-        if (!payment.isPaid()) {
-            throw new RuntimeException("결제되지 않은 주문은 환불할 수 없습니다.");
-        }
+        // 무조건 환불 처리
+        payment.setPaid(false);
+        payment.setPaymentDate(LocalDateTime.now());
 
-        // 🛑 환불 처리: 결제 상태를 취소로 변경
-        payment.setPaid(false); // 결제 취소
-        payment.setPaymentDate(LocalDateTime.now()); // 환불된 시점으로 갱신
-
-        // 🛑 주문 상태 업데이트 (환불 완료)
+        // 주문 상태도 환불 완료로 설정
         order.setStatus("환불 완료");
         orderRepository.save(order);
 
         return paymentRepository.save(payment);
     }
+
 
 }

@@ -11,15 +11,18 @@ import com.book_store.capstone_25.Repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping({"/api"}) // 클래스 전체에 적용된 루트 경로 정의
@@ -39,26 +42,48 @@ public class UserController {
         UserSuchRepository = userSuchRepository;
     }
 
-    // 회원가입 검증 코드
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        // Check if userId or password is empty/null
-        if (user.getUserId() == null || user.getUserId().trim().isEmpty() ||
-                user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("사용자 ID와 비밀번호는 필수입니다.");
+    public ResponseEntity<?> registerUser(
+            @Valid @RequestBody User user,
+            BindingResult br) {                         // ⬅️ 검증 결과
+
+        /* 1) Bean-Validation 오류 → 400 */
+        if (br.hasErrors()) {
+            String msg = br.getFieldErrors().stream()
+                    .map(f -> f.getField() + " : " + f.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.badRequest().body(msg);  // text/plain 또는 JSON으로
         }
+
+        /* 2) ID 중복 검사 */
         if (userRepository.findUserByUserId(user.getUserId()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("이미 존재하는 사용자 ID입니다.");
+                    .body("이미 존재하는 로그인 ID입니다.");
         }
-        try {
-            User savedUser = userService.saveUser(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("사용자 등록 중 오류가 발생했습니다: " + e.getMessage());
+
+        /* 3) 저장 */
+        User saved = userService.saveUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @GetMapping("/check-id")
+    public ResponseEntity<?> checkDuplicateUserId(@RequestParam String userId) {
+
+        if (userId == null || userId.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "userId 파라미터가 필요합니다."));
         }
+
+        boolean exists = userRepository.findUserByUserId(userId).isPresent();
+
+        if (exists) {
+            // 이미 존재 → 409
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "이미 존재하는 사용자 ID입니다.", "available", false));
+        }
+
+        // 사용 가능 → 200
+        return ResponseEntity.ok(Map.of("message", "사용 가능한 ID입니다.", "available", true));
     }
 
     @PostMapping("/login")
@@ -116,37 +141,49 @@ public class UserController {
                     .body(Map.of("message", "해당 이메일로 등록된 계정이 없습니다!"));
         }
 
+        User user = userOptional.get();
+
+        // 기존 인증 정보가 있다면 삭제
+        Optional<User_Such> existing = UserSuchRepository.findByUser(user);
+        existing.ifPresent(UserSuchRepository::delete);
+
         // 인증 코드 생성
         String authenticationCode = EmailService.generateAuthenticationCode();
-
-        // 인증 코드를 User_Such 테이블에 저장
         String token = UUID.randomUUID().toString();
-        UserSuchRepository.save(new User_Such(token, userOptional.get(), authenticationCode));
 
-        // 이메일로 인증 코드 전송
+        // 새 인증 정보 저장
+        UserSuchRepository.save(new User_Such(token, user, authenticationCode));
+
+        // 이메일 전송
         emailServcie.sendAuthenticationCode(email, authenticationCode);
 
         return ResponseEntity.ok(Map.of("message", "인증 코드를 이메일로 보냈습니다."));
     }
 
     @PostMapping("/verify-code")
-    public ResponseEntity<?> verifyCode(@RequestParam String email, @RequestParam String authenticationCode) {
-        User_Such userSuch = UserSuchRepository.findUser_SuchByUserEmailAndAuthenticationCode(email, authenticationCode);
+    public ResponseEntity<?> verifyCode(@RequestParam String email,
+                                        @RequestParam String authenticationCode) {
+
+        User_Such userSuch = UserSuchRepository
+                .findUser_SuchByUserEmailAndAuthenticationCode(email, authenticationCode);
 
         if (userSuch == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "잘못된 인증 코드입니다."));
         }
 
-        // 인증 성공시 비밀번호 반환
+        // ① 비밀번호 가져오기
         String password = userSuch.getUser().getPassword();
 
-        // 사용된 인증 코드 삭제
+        // ② 메일로 비밀번호 전송
+        emailServcie.sendPassword(email, password);
+
+        // ③ 인증 기록 삭제
         UserSuchRepository.delete(userSuch);
 
+        // ④ 클라이언트에는 결과 메시지만
         return ResponseEntity.ok(Map.of(
-                "message", "인증이 완료되었습니다.",
-                "password", password
+                "message", "인증이 완료되었습니다. 비밀번호를 이메일로 전송했습니다."
         ));
     }
 

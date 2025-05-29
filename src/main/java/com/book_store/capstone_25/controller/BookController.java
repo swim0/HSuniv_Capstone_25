@@ -10,6 +10,7 @@ import com.book_store.capstone_25.model.User;
 import com.book_store.capstone_25.service.BookService;
 import com.book_store.capstone_25.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,18 +44,22 @@ public class BookController {
         book.setGenre(bookDTO.getGenre());
         book.setPrice(bookDTO.getPrice());
 
-        // 이미지 저장 처리
+        // ✅ 이미지 저장 처리 (JAR 외부 디렉토리)
         if (bookDTO.getImage() != null && !bookDTO.getImage().isEmpty()) {
             String fileName = UUID.randomUUID() + "_" + bookDTO.getImage().getOriginalFilename();
-            Path filePath = Paths.get("src/main/resources/static/images/" + fileName);
+
+            // ✅ 실제 서버의 이미지 디렉토리 경로
+            String uploadDir = "/home/dayzen32/images/";
+            Path filePath = Paths.get(uploadDir + fileName);
             Files.write(filePath, bookDTO.getImage().getBytes());
 
-            // 저장된 이미지 경로를 DB에 저장
+            // ✅ URL에 접근할 경로는 "/images/파일명"
             book.setImageUrl("/images/" + fileName);
         }
 
         return ResponseEntity.ok(bookRepository.save(book));
     }
+
 
     // add_books는 백엔드 테스트용도! 프론트 분들도 참고하세요
     @GetMapping("/add_books")
@@ -142,13 +147,278 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
 
+    @GetMapping("/add_book6")
+    public ResponseEntity<Book> add_book6() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/gundal.jpg";
 
+        Book book = bookService.createBookFromResource(
+                "낭만 건달",
+                "요제프 폰 아이헨도르프",
+                "교보문고",
+                "고전",
+                new BigDecimal("15000"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book7")
+    public ResponseEntity<Book> add_book7() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/buin.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "보바리 부인",
+                "귀스타브 플로베르",
+                "문예출판사",
+                "고전",
+                new BigDecimal("10800"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book8")
+    public ResponseEntity<Book> add_book8() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/pasang.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "모파상 단편선",
+                "기 드 모파상",
+                "문예출판사",
+                "고전",
+                new BigDecimal("7200"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book9")
+    public ResponseEntity<Book> add_book9() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/woman.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "위기의 여자",
+                "시몬 드 보부아르",
+                "문예출판사",
+                "고전",
+                new BigDecimal("9900"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book10")
+    public ResponseEntity<Book> add_book10() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/star.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "별에게",
+                "안녕달",
+                "창비",
+                "동화",
+                new BigDecimal("15120"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book11")
+    public ResponseEntity<Book> add_book11() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/happy.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "해피버쓰데이",
+                "백희나",
+                "스토리보울",
+                "동화",
+                new BigDecimal("15300"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book12")
+    public ResponseEntity<Book> add_book12() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/you.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "너였구나",
+                "이석훈",
+                "창비교육",
+                "동화",
+                new BigDecimal("15200"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book13")
+    public ResponseEntity<Book> add_book13() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/reason.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "라임 앤 리즌 1: 디스토피아",
+                "예소연",
+                "김영사",
+                "디스토피아",
+                new BigDecimal("13200"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book14")
+    public ResponseEntity<Book> add_book14() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/life.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "핵전쟁 디스토피아 생존기",
+                "기장",
+                "아르텐",
+                "디스토피아",
+                new BigDecimal("13200"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book15")
+    public ResponseEntity<Book> add_book15() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/human.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "잉여인간",
+                "손창섭",
+                "민음사",
+                "전후소설",
+                new BigDecimal("13200"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book16")
+    public ResponseEntity<Book> add_book16() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/Ewha.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "수난 이대",
+                "전국국어교사모임",
+                "휴머니스트",
+                "전후소설",
+                new BigDecimal("14000"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book17")
+    public ResponseEntity<Book> add_book17() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/gene.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "불신시대",
+                "박경리",
+                "문학과지성사",
+                "전후소설",
+                new BigDecimal("10800"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book18")
+    public ResponseEntity<Book> add_book18() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/hw.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "풍자화전",
+                "제아미",
+                "지만지드라마",
+                "풍자",
+                new BigDecimal("15120"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/add_book19")
+    public ResponseEntity<Book> add_book19() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/pung.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "권력과 풍자",
+                "류재화",
+                "한길아트",
+                "풍자",
+                new BigDecimal("12200"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
+
+
+    @GetMapping("/add_book20")
+    public ResponseEntity<Book> add_book20() {
+        // 이미지 경로를 설정 (static 폴더 내 파일을 직접 사용)
+        String imagePath = "/images/cheir.jpg";
+
+        Book book = bookService.createBookFromResource(
+                "풍자, 시인의 의자",
+                "김관식",
+                "이바구",
+                "풍자",
+                new BigDecimal("13500"),
+                imagePath
+        );
+
+        return ResponseEntity.ok(book);
+    }
     // 특정 책 조회
     @GetMapping("/goods/{id}")
     public ResponseEntity<Book> getBook(@PathVariable Long id) {
         return bookRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/delete_book_by_title")
+    public ResponseEntity<String> deleteBookByTitle(@RequestParam String title) {
+        List<Book> books = bookRepository.findBookByTitle(title);
+        if (books.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 제목의 책이 없습니다.");
+        }
+
+        bookRepository.deleteAll(books);
+        return ResponseEntity.ok("삭제 완료: " + title);
     }
 
     // 전체 책 목록 조회

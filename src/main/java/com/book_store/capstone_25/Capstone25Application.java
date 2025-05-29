@@ -20,10 +20,11 @@ public class Capstone25Application {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://webook.kro.kr")  // 정확한 프론트 도메인
+                        .allowedOriginPatterns("*")   // 패턴 기반 API (5.3+)
                         .allowedMethods("*")
                         .allowedHeaders("*")
-                        .allowCredentials(true);
+                        .allowCredentials(true)
+                        .maxAge(3600);
             }
         };
     }

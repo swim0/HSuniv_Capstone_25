@@ -3,42 +3,44 @@ package com.book_store.capstone_25.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Positive;
+import lombok.*;
+import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.processing.Pattern;
+import org.springframework.boot.convert.DataSizeUnit;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Setter
+
 @Data
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
 
-    @Column(name = "user_id")
-    private String userId;
-    @Column(name = "password")
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;                                   // PK
+
+    @Column(name = "user_id", nullable = false,
+            unique = true, length = 30)
+    private String userId;                             // 로그인 ID
+
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "name")
+    // ────────── 기타 프로필 ──────────
     private String name;
-    @Column(name = "age")
-    private String age;
-    @Column(name = "email")
+    private Integer age;
     private String email;
-
-    @Column(name = "phone")
     private String phoneNumber;
-    @Column(name = "address")
     private String address;
-    @Column(name = "birthdate")
     private String birthDate;
-
 
     @Column(name = "cardnumber")
     private String cardNumber;
